@@ -1,307 +1,96 @@
 import React from "react";
-import heroImage01 from "../assets/images/hero-img01.png";
-import heroImage02 from "../assets/images/hero-img02.png";
-import heroImage03 from "../assets/images/hero-img03.png";
-import icon01 from "../assets/images/icon01.png";
-import icon02 from "../assets/images/icon02.png";
-import icon03 from "../assets/images/icon03.png";
-import featureimg from "../assets/images/feature-img.png";
-import faqImg from "../assets/images/faq-img.png";
-import videoIcon from "../assets/images/video-icon.png";
-import avatarIcon from "../assets/images/avatar-icon.png";
 import { Link } from "react-router-dom";
-import { BsArrowRight } from "react-icons/bs";
-import About from "../components/About/About";
-import ServiceList from "../components/Services/ServiceList";
-import DoctorList from "../components/Doctors/DoctorList";
-import FaqList from "../components/Faq/FaqList";
-import Testimonial from "../components/Testimonial/Testimonial";
-import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
 
 const Home = () => {
-  const navigate = useNavigate(); // Get the navigate function from useNavigate
-  const bookAppointment = async () => {
-    toast.success("Find your Doctor");
-    navigate("/doctors"); // Redirect to the /doctors route
-  };
   return (
-    <>
-      {/* ========== Hero Section ========== */}
-      <section className="hero__section pt-[60px] 2xl:h-[800px]">
-        <div className="container">
-          <div className="flex flex-col lg:flex-row gap-[90px] items-center justify-between">
-            {/* ========== Hero Content ========== */}
-            <div>
-              <div className="lg:w-[570px]">
-                <h1 className="text-[36px] leading-[46px] text-headingColor font-[800] md:text-[45px] md:leading-[70px]">
-                  A Smart Solution for Better Healthcare: Helping patients live
-                  healthier, longer lives.
-                </h1>
-                <p className="text__para">
-                  We have developed a healthcare platform that supports the
-                  diagnosis, treatment, and management of seven major diseases,
-                  aiming to improve patient quality of life with accurate
-                  information, customized treatment plans, and ongoing support.
-                </p>
-                <button onClick={bookAppointment} className="btn">
-                  Request an Appointment
-                </button>
-              </div>
-              {/* ========== Hero Counter */}
-              <div className="mt-[30px] lg:mt-[70px] flex flex-col lg:flex-row lg:items-center gap-5 lg:gap-[30px]">
-                <div>
-                  <h2 className="text-[36px] leading-[56px] lg:text-[44px] lg:leading-[54px] font-[700] text-headingColor">
-                    30+
-                  </h2>
-                  <span className="w-[100px] h-2 bg-yellowColor rounded-full block mt-[-14px]"></span>
-                  <p className="text__para">Years of Experience</p>
-                </div>
+    <section className="mx-auto max-w-6xl px-6 py-16">
+      <div className="grid gap-10 rounded-3xl bg-gradient-to-r from-blue-600 to-cyan-500 p-10 text-white shadow-xl md:grid-cols-2 md:p-16">
+        <div>
+          <p className="mb-4 text-sm uppercase tracking-[0.2em] text-blue-100">AI-Based Medical Laboratory System</p>
+          <h1 className="text-4xl font-bold leading-tight md:text-5xl">
+            Smarter diagnosis, faster care, and transparent lab workflows.
+          </h1>
+          <p className="mt-6 max-w-xl text-blue-50">
+            AI-MedLab connects patients, doctors, and lab support into a single digital healthcare system for diagnostic guidance,
+            digital services, and efficient medical reporting.
+          </p>
+          <div className="mt-8 flex flex-wrap gap-4">
+            <Link to="/services" className="rounded-full bg-white px-6 py-3 font-semibold text-blue-700 hover:bg-blue-50">
+              Explore Services
+            </Link>
+            <Link to="/results-analysis" className="rounded-full border border-white px-6 py-3 font-semibold text-white hover:bg-white/10">
+              Results & Analysis
+            </Link>
+            <Link to="/symptom-check" className="rounded-full border border-white px-6 py-3 font-semibold text-white hover:bg-white/10">
+              Symptom Check
+            </Link>
+          </div>
+        </div>
 
-                <div>
-                  <h2 className="text-[36px] leading-[56px] lg:text-[44px] lg:leading-[54px] font-[700] text-headingColor">
-                    15+
-                  </h2>
-                  <span className="w-[100px] h-2 bg-purpleColor rounded-full block mt-[-14px]"></span>
-                  <p className="text__para">Clinic Location</p>
-                </div>
-
-                <div>
-                  <h2 className="text-[36px] leading-[56px] lg:text-[44px] lg:leading-[54px] font-[700] text-headingColor">
-                    100%
-                  </h2>
-                  <span className="w-[100px] h-2 bg-irisBlueColor rounded-full block mt-[-14px]"></span>
-                  <p className="text__para">Patient Satisfaction</p>
-                </div>
-              </div>
+        <div className="rounded-2xl bg-white/10 p-6 backdrop-blur-sm">
+          <div className="grid gap-4">
+            <div className="rounded-xl bg-white/10 p-4">
+              <p className="text-sm text-blue-100">Disease detection</p>
+              <h2 className="mt-2 text-3xl font-bold">7 major conditions</h2>
             </div>
-            {/* ========== Hero Content ========== */}
-
-            <div className="flex gap-[30px] justify-end">
-              <div>
-                <img src={heroImage01} className="w-full" alt="" />
-              </div>
-              <div className="mt-[30px]">
-                <img src={heroImage02} className="w-full mb-[30px]" alt="" />
-                <img src={heroImage03} className="w-full" alt="" />
-              </div>
+            <div className="rounded-xl bg-white/10 p-4">
+              <p className="text-sm text-blue-100">Care quality</p>
+              <h2 className="mt-2 text-3xl font-bold">99.9% monitoring</h2>
+            </div>
+            <div className="rounded-xl bg-white/10 p-4">
+              <p className="text-sm text-blue-100">Support</p>
+              <h2 className="mt-2 text-3xl font-bold">24/7 guidance</h2>
             </div>
           </div>
         </div>
-      </section>
-      {/* ========== Hero Section End ========== */}
+      </div>
 
-      <section>
-        <div className="container">
-          <div className="lg:w-[470px] mx-auto">
-            <h2 className="heading text-center">
-              Providing the medical services
-            </h2>
-            <p className="text__para text-center">
-              World-class care for everyone. Our health System offers unmatched
-              expert health care.
-            </p>
+      <div className="mt-16 grid gap-8 md:grid-cols-3">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h3 className="text-xl font-semibold text-slate-900">AI Diagnostics</h3>
+          <p className="mt-3 text-slate-600">Get on-demand insight for major medical conditions and lab-driven decision support.</p>
+        </div>
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h3 className="text-xl font-semibold text-slate-900">Clinical Workflow</h3>
+          <p className="mt-3 text-slate-600">Support doctor and patient coordination through simple, structured healthcare modules.</p>
+        </div>
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h3 className="text-xl font-semibold text-slate-900">Patient Care</h3>
+          <p className="mt-3 text-slate-600">Improve outcomes with clearer guidance, monitoring, and digital follow-up services.</p>
+        </div>
+      </div>
+
+      <div className="mt-16 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">Project sections</p>
+            <h2 className="mt-3 text-3xl font-bold text-slate-900">System modules documented in the PDF</h2>
           </div>
+          <Link to="/results-analysis" className="rounded-full bg-blue-600 px-5 py-3 font-semibold text-white hover:bg-blue-700">
+            View Results & Analysis
+          </Link>
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-[30px] mt-[30px] lg:mt-[55px]">
-            <div className="py-[30px] px-5">
-              <div className="flex items-center justify-center">
-                <img src={icon01} alt="icon" />
-              </div>
-
-              <div className="mt-[30px]">
-                <h2 className="text-[26px] leading-9 text-headingColor font-[700] text-center">
-                  Find a Doctor
-                </h2>
-                <p className="text-[16px] leading-7 text-textColor font-[400] mt-4 text-center">
-                  World-class care for everyone. Our health System offers
-                  unmatched expert health care. From the lab to the clinic
-                </p>
-                <Link
-                  to="/doctors"
-                  className="w-[44px] h-[44px] rounded-full border border-solid border-[#181A1E] mt-[30px] mx-auto flex items-center justify-center group hover:bg-primaryColor hover:border-none"
-                >
-                  <BsArrowRight className="group-hover:text-white w-6 h-5" />
-                </Link>
-              </div>
-            </div>
-
-            <div className="py-[30px] px-5">
-              <div className="flex items-center justify-center">
-                <img src={icon02} alt="icon" />
-              </div>
-
-              <div className="mt-[30px]">
-                <h2 className="text-[26px] leading-9 text-headingColor font-[700] text-center">
-                  Find a Location
-                </h2>
-                <p className="text-[16px] leading-7 text-textColor font-[400] mt-4 text-center">
-                  World-class care for everyone. Our health System offers
-                  unmatched expert health care. From the lab to the clinic
-                </p>
-                <Link
-                  to="/doctors"
-                  className="w-[44px] h-[44px] rounded-full border border-solid border-[#181A1E] mt-[30px] mx-auto flex items-center justify-center group hover:bg-primaryColor hover:border-none"
-                >
-                  <BsArrowRight className="group-hover:text-white w-6 h-5" />
-                </Link>
-              </div>
-            </div>
-
-            <div className="py-[30px] px-5">
-              <div className="flex items-center justify-center">
-                <img src={icon03} alt="icon" />
-              </div>
-
-              <div className="mt-[30px]">
-                <h2 className="text-[26px] leading-9 text-headingColor font-[700] text-center">
-                  Booking a Appointment
-                </h2>
-                <p className="text-[16px] leading-7 text-textColor font-[400] mt-4 text-center">
-                  World-class care for everyone. Our health System offers
-                  unmatched expert health care. From the lab to the clinic
-                </p>
-                <Link
-                  to="/doctors"
-                  className="w-[44px] h-[44px] rounded-full border border-solid border-[#181A1E] mt-[30px] mx-auto flex items-center justify-center group hover:bg-primaryColor hover:border-none"
-                >
-                  <BsArrowRight className="group-hover:text-white w-6 h-5" />
-                </Link>
-              </div>
-            </div>
+        <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          <div className="rounded-2xl bg-blue-50 p-5">
+            <p className="text-sm font-semibold uppercase tracking-[0.15em] text-blue-700">User Interface</p>
+            <p className="mt-3 text-slate-700">Responsive patient and doctor portal with accessible healthcare navigation.</p>
+          </div>
+          <div className="rounded-2xl bg-cyan-50 p-5">
+            <p className="text-sm font-semibold uppercase tracking-[0.15em] text-cyan-700">Services</p>
+            <p className="mt-3 text-slate-700">AI-guided medical support for disease screening and personalized recommendations.</p>
+          </div>
+          <div className="rounded-2xl bg-emerald-50 p-5">
+            <p className="text-sm font-semibold uppercase tracking-[0.15em] text-emerald-700">Payment</p>
+            <p className="mt-3 text-slate-700">Secure digital interaction for healthcare transactions and service bookings.</p>
+          </div>
+          <div className="rounded-2xl bg-amber-50 p-5">
+            <p className="text-sm font-semibold uppercase tracking-[0.15em] text-amber-700">Results</p>
+            <p className="mt-3 text-slate-700">Summary metrics, evaluation, usability review, and future improvement roadmap.</p>
           </div>
         </div>
-      </section>
-
-      {/* ========== About Section ========== */}
-      <About />
-      {/* ========== About Section end ========== */}
-
-      {/* ========== Services Section ========== */}
-      <section>
-        <div className="container">
-          <div className="xl:w-[470px] mx-auto">
-            <h2 className="heading text-center">Our medical services</h2>
-            <p className="text__para text-center">
-              World-class care for everyone. Our health system offers
-              unmathched, expert health care.
-            </p>
-          </div>
-          <ServiceList />
-        </div>
-      </section>
-      {/* ========== Services Section end ========== */}
-
-      {/* ========== Feature Section ========== */}
-      <section>
-        <div className="container">
-          <div className="flex items-center justify-between flex-col lg:flex-row">
-            {/* ========== Feature Content ========== */}
-            <div className="xl:w-[670px]">
-              <h2 className="heading">
-                Get Virtual treatment <br />
-                anytime
-              </h2>
-              <ul className="pl-4">
-                <li className="text__para">
-                  1. Schedule the appointment directly.
-                </li>
-                <li className="text__para">
-                  2. Search for your physicians here and conatc their office.{" "}
-                </li>
-                <li className="text__para">
-                  3. Schedule the appointment directly.
-                </li>
-              </ul>
-              <Link to="/">
-                <button className="btn">Learn More</button>
-              </Link>
-            </div>
-
-            {/* ========== Feature Image ========== */}
-            <div className="relative z-10 xl:w-[770px] flex justify-end mt-[50px] lg:mt-0">
-              <img src={featureimg} className="w-3/4" alt="" />
-
-              <div className="w-[150px] lg:w-[248px] bg-white absolute bottom-[50px] left-0 md:bottom-[100px] md:left-5 z-20 p-2 pb-3 lg:pt-4 lg:px-4 lg:pb-[26px] roundeed-[10px]">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-[6px] lg:gap-3">
-                    <p className="text-[10px] leading-[10px] lg:text-[14px] lg:leading-5 text-headingColor font-[600]">
-                      Tue, 24
-                    </p>
-                    <p className="text-[10px] leading-[10px] lg:text-[14px] lg:leading-5 text-textColor font-[400]">
-                      10:00AM
-                    </p>
-                  </div>
-                  <span className="w-5 h-5 lg:w-[34px] lg:h-[34px] flex items-center justify-center bg-yellowColor rounded py-1 px-[6px] lg:py-3 lg:px-[9px]">
-                    <img src={videoIcon} alt="" />
-                  </span>
-                </div>
-
-                <div className="w-[65px] lg:w-[96px] bg-[#CCF0F3] py-1 px-2 lg:py-[6px] lg:px-[10px] text-[8px] leading-[8px] lg:text-[12px] lg:leading-4 text-irisBlueColor font-[500] mt-2 lg:mt-4 rounded-full">
-                  Consultation
-                </div>
-                <div className="flex items-center gap-[6px] lg:gap-[10px] mt-2 lg:mt-[18px]">
-                  <img src={avatarIcon} alt="" />
-                  <h4 className="text-[10px] leading-3 lg:text-[16px] lg:leading-[22px] font-[700] text-headingColor">
-                    Abdul Wahab
-                  </h4>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-      {/* ========== Feature Section end ========== */}
-
-      {/* ========== Our Great Doctors Section ========== */}
-      <section>
-        <div className="container">
-          <div className="xl:w-[470px] mx-auto">
-            <h2 className="heading text-center">Our greate doctors</h2>
-            <p className="text__para text-center">
-              World-class care for everyone. Our health system offers
-              unmathched, expert health care.
-            </p>
-          </div>
-          <DoctorList />
-        </div>
-      </section>
-      {/* ========== Our Great Doctors Section end ========== */}
-
-      {/* ========== Faqs Section ========== */}
-      <section>
-        <div className="container">
-          <div className="flex justify-between gap-[50px] lg:gap-0">
-            <div className="w-1/2 hidden md:block">
-              <img src={faqImg} alt="" />
-            </div>
-
-            <div className="w-full md:w-1/2">
-              <h2 className="heading">
-                Most questions asked by our beloved customers
-              </h2>
-              <FaqList />
-            </div>
-          </div>
-        </div>
-      </section>
-      {/* ========== Faqs Section end ========== */}
-
-      {/* ========== Testimonial Section ========== */}
-      <section>
-        <div className="container">
-          <div className="xl:w-[470px] mx-auto">
-            <h2 className="heading text-center">What our patients say</h2>
-            <p className="text__para text-center">
-              World-class care for everyone. Our health system offers
-              unmathched, expert health care.
-            </p>
-          </div>
-          <Testimonial />
-        </div>
-      </section>
-      {/* ========== Testimonial Section end ========== */}
-    </>
+      </div>
+    </section>
   );
 };
 
