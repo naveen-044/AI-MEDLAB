@@ -1,4 +1,4 @@
-# AI-based Medical Laboratory
+# AI-based Medical Laboratory System
 
 ## Project Overview
 
