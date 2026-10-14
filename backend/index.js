@@ -27,9 +27,10 @@ process.env.JWT_SECRET_KEY = process.env.JWT_SECRET_KEY || 'your_secret_key_here
 const app = express();
 const port = process.env.PORT || 8000;
 
-const corsOptions = {
-  origin: true,
-};
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(",").map((origin) => origin.trim())
+  : ["http://localhost:5173", "http://127.0.0.1:5173"];
+const corsOptions = { origin: allowedOrigins };
 
 app.get("/", (req, res) => {
   res.send("Api is working");
@@ -60,6 +61,30 @@ app.use("/api/v1/admin", adminRoute);
 app.use("/api/v1/", contactRoute);
 app.use("/api/v1/", forgotPassRoute);
 app.use("/api/v1/", healthRoute);
+app.get("/api/v1/ai-health", async (req, res) => {
+  try {
+    const response = await fetch(
+      `${process.env.AI_SERVICE_URL || "http://127.0.0.1:8001"}/health`,
+      { signal: AbortSignal.timeout(3_000) },
+    );
+    const status = await response.json();
+    return res.status(response.ok ? 200 : 503).json(status);
+  } catch (error) {
+    return res.status(503).json({
+      status: "unavailable",
+      message: "The FastAPI model service is not responding.",
+    });
+  }
+});
+app.use((error, req, res, next) => {
+  if (res.headersSent) return next(error);
+  console.error("Request failed:", error.message);
+  const isUploadError = error.name === "MulterError";
+  return res.status(isUploadError ? 413 : 400).json({
+    success: false,
+    message: error.message || "The request could not be processed.",
+  });
+});
 
 connectDB().then(() => {
   app.listen(port, () => {

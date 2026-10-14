@@ -1,121 +1,122 @@
 # AI-based Medical Laboratory System
 
-## Project Overview
+﻿# AI-MedLab project
 
-The AI-based Medical Laboratory project aims to revolutionize laboratory medicine through the use of artificial intelligence (AI) and machine learning (ML). By enhancing the precision and speed of laboratory processes, the project seeks to reduce human errors, cut costs, and ultimately improve patient outcomes and satisfaction.
+A responsive React medical portal with a Node.js/Express API and a separate FastAPI model service. It reproduces the main flows in the supplied project reference: home, healthcare center, seven disease-screening modules, doctor directory/profile, services, and appointment checkout.
 
-### Features
+> **Medical-use notice:** The bundled models are demonstrations and are not presented as medically validated. Model outputs are raw screening results, not diagnoses or treatment recommendations. Use a qualified clinician for medical decisions.
 
-- **Customer Module**: Allows patients to submit samples and receive results.
-- **Doctor Module**: Provides doctors with tools to analyze lab results and make informed decisions.
-- **Lab Assistant Module**: Assists lab technicians with managing samples and running analyses using AI/ML tools.
+## Architecture
 
-### Pros and Cons
+- `frontend/`: React, Vite, React Router, Tailwind CSS.
+- `backend/`: Express API and MongoDB models/authentication.
+- `backend/ai_service/`: FastAPI service for five numeric models, two image models, and symptom screening. Express forwards model requests to it.
+- `backend/aimodels/`: bundled model files required for inference.
 
-#### Pros
+## Requirements
 
-- Enhances precision and speed of laboratory medicine.
-- Reduces human errors and operational costs.
-- Improves patient outcomes and satisfaction.
+- Node.js 20 or later and npm.
+- Python with packages from `backend/requirements.txt` (TensorFlow support is platform/Python-version dependent).
+- MongoDB reachable from the backend.
 
-#### Cons
+## Local setup
 
-- Challenges with data quality and availability.
-- Requires significant computing power.
-- Issues of trust, acceptance, and the need for education.
+### 1. Install JavaScript dependencies
 
-### Technologies Used
-
-- **Frontend**: React, Redux, HTML, CSS, JavaScript
-- **Backend**: Node.js, Express, MongoDB
-- **AI/ML Tools**: Python, R, TensorFlow, PyTorch, scikit-learn, pandas, NumPy, matplotlib, seaborn
-
-## Project Structure
-
-The project is structured into two main directories:
-
-- `frontend`: Contains the frontend code built with React.
-- `backend`: Contains the backend code built with Node.js and Express.
-
-## Installation
-
-### Prerequisites
-
-- Node.js and npm installed on your machine.
-- MongoDB installed and running.
-
-### Steps
-
-1. **Clone the repository**
-
-```bash
-   git clone https://github.com/your-username/ai-medical-lab.git
-   cd ai-medical-lab
+```powershell
+cd backend
+npm install
+cd ..\frontend
+npm install
 ```
 
-2. **Install dependencies for backend**
+### 2. Configure the backend
 
-```bash
-   cd backend
-   npm install
+Create `backend/.env` (do not commit it) with your own values:
+
+```dotenv
+MONGO_URL=mongodb://127.0.0.1:27017/aimedlab
+JWT_SECRET_KEY=replace-with-a-long-random-secret
+PORT=8000
+AI_SERVICE_URL=http://127.0.0.1:8001
+CLIENT_SITE_URL=http://localhost:5173
+# Optional: set a test key for Stripe checkout; omit for no-charge demo mode.
+STRIPE_SECRET_KEY=sk_test_replace_with_your_test_key
+CORS_ORIGIN=http://localhost:5173,http://127.0.0.1:5173
 ```
 
-3. **Install dependencies for frontend**
+For development, replace the Stripe placeholder with your own test key. Do not use a production secret in local testing. If Stripe is not configured, checkout is clearly marked as a demo and records no paid booking.
 
-```bash
-   cd ../frontend
-   npm install
+### 3. Install Python dependencies
+
+```powershell
+cd backend
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
 ```
 
-4. **Set up environment variables**
+If TensorFlow is unavailable for your Python version or platform, use a Python version supported by the TensorFlow release you install. Do not continue with the image service until `tf_keras` can load the bundled `.h5` models.
 
-   - Create a `.env` file in the `backend` directory and add the following:
+### 4. Run the three services
 
-```text
-   MONGO_URI=your_mongodb_uri
-   PORT=5000
+Open three terminals from the project directory:
+
+```powershell
+# Terminal 1 — FastAPI model service
+cd backend
+.venv\Scripts\Activate.ps1
+python -m uvicorn ai_service.main:app --host 127.0.0.1 --port 8001
 ```
 
-5. **Run the backend server**
-
-```bash
-   cd ../backend
-   npm start or nodemon
+```powershell
+# Terminal 2 — Express API (MongoDB must be reachable)
+cd backend
+npm start
 ```
 
-6. **Run the frontend server**
-
-```bash
-   cd ../frontend
-   npm start
+```powershell
+# Terminal 3 — React/Vite frontend
+cd frontend
+npm run dev
 ```
 
-## Usage
+Open `http://localhost:5173`. FastAPI health is at `http://127.0.0.1:8001/health`; through Express, use `http://localhost:8000/api/v1/ai-health`. Swagger docs are available at `http://127.0.0.1:8001/docs` during development.
 
-- Access the application at `http://localhost:5173`.
-- Use the frontend interface to interact with the different modules (Customer, Doctor, Lab Assistant).
+## Model API
 
-## Contributors
+Express preserves the frontend endpoints under `/api/v1`:
 
-- **[Abdul Wahab](https://github.com/abdul-wahab619)** - Full Stack Developer
-- **[Nafeesa Shehzadi](https://github.com/nafeesa-shehzadi)** - Frontend Developer
+- `POST /diabetes`, `/heart`, `/kidney`, `/liver`, `/breast-cancer` with `{ "data": { ...model fields... } }`.
+- `POST /predict-malaria` and `/predict-pneumonia` with an `image` multipart upload (PNG, JPEG, or WebP; maximum 10 MB).
+- `POST /symptoms` with `{ "data": ["headache", "high fever"] }` or a comma-separated symptom string.
 
-## Collaboration
+FastAPI also provides the corresponding endpoints under `/api/v1/predict/...`, `/api/v1/predict-image/...`, and `/api/v1/predict-symptoms`. Invalid fields/uploads are rejected; missing/unavailable models return errors rather than invented prediction values.
 
-We welcome contributions from everyone! If you are interested in contributing to this project, please follow these steps:
+## Payment behavior
 
-1. Fork the repository.
-2. Create a new branch (`git checkout -b feature-branch`).
-3. Make your changes.
-4. Commit your changes (`git commit -m 'Add new feature'`).
-5. Push to the branch (`git push origin feature-branch`).
-6. Create a Pull Request.
+The payment review page summarizes the selected doctor and redirects to Stripe-hosted checkout when configured; card details are not collected or stored by this app. A successful Stripe return is confirmed server-side against Stripe before the booking is marked paid. Without a Stripe secret key, the app offers a visibly labeled demo path that does not charge money or mark the booking paid.
 
-For major changes, please open an issue first to discuss what you would like to change.
+## Validation
 
-Feel free to reach out to us with any questions or suggestions. Let's collaborate to extend the exposure and impact of this project!
+```powershell
+cd frontend
+npm run lint
+npm run build
+cd ..\backend
+.venv\Scripts\python.exe -m pytest ai_service\tests -q
+```
 
+Make sure MongoDB and the FastAPI service are running before exercising the full application. `GET /api/v1/ai-health` checks FastAPI connectivity and local model-file availability.
 
-## License
+## Production deployment notes
 
+<<<<<<< HEAD
 This project is licensed under the [MIT License](https://github.com/abdul-wahab619/AI-MedLab/blob/main/LICENSE).
+=======
+Deploy the frontend, Express API, MongoDB, and FastAPI model service as separate services. Set `AI_SERVICE_URL` to the private FastAPI URL reachable from Express; do not expose the model service publicly unless protected by an appropriate network/API policy. Set `CLIENT_SITE_URL` and `CORS_ORIGIN` to the deployed frontend origin, configure `MONGO_URL`, a strong `JWT_SECRET_KEY`, and Stripe keys via the hosting provider's secret manager. Use HTTPS and run the same lint/build/model tests before release. Do not commit `.env` files or model service credentials.
+
+Set the frontend build variable `VITE_API_URL` to the Express API base URL, including `/api/v1` (for example `https://api.example.com/api/v1`), before building the production frontend.
+
+> > > > > > > 9b4d167 (Update AI MedLab working project)

@@ -1,4 +1,5 @@
-import { createContext, useContext, useEffect, useReducer } from "react";
+import PropTypes from "prop-types";
+import { createContext, useEffect, useReducer } from "react";
 
 const parseJSON = (value) => {
   try {
@@ -68,4 +69,8 @@ export const AuthContextProvider = ({ children }) => {
       {children}
     </authContext.Provider>
   );
+};
+
+AuthContextProvider.propTypes = {
+  children: PropTypes.node.isRequired,
 };

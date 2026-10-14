@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import { useState, useContext } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { BASE_URL } from "../config";
 import { toast } from "react-toastify";
@@ -76,9 +76,10 @@ const ResetPassword = () => {
           <div className="mt-5 text-center">
             <button
               type="submit"
+              disabled={loading}
               className="p-3 rounded-xl cursor-pointer bg-primaryColor text-white text-2xl font-semibold"
             >
-              Update
+              {loading ? "Updating..." : "Update"}
             </button>
           </div>
         </form>

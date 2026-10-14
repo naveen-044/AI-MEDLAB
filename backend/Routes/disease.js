@@ -1,198 +1,104 @@
 import express from "express";
-import { spawn } from "child_process";
 import multer from "multer";
-import path from "path";
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const router = express.Router();
-
-const diabetesModel = path.join(__dirname, '..', 'aimodels', 'diabetes.pkl');
-const heartModel = path.join(__dirname, '..', 'aimodels', 'heart.pkl');
-const kidneyModel = path.join(__dirname, '..', 'aimodels', 'kidney.pkl');
-const liverModel = path.join(__dirname, '..', 'aimodels', 'liver.pkl');
-const breastCancerModel = path.join(__dirname, '..', 'aimodels', 'breast_cancer.pkl');
-
-const pythonScriptPathForDiabetes = path.join(__dirname, '..', 'predict.py');
-const pythonScriptPathForHeart = path.join(__dirname, '..', 'heart.py');
-const pythonScriptPathForKidney = path.join(__dirname, '..', 'kidney.py');
-const pythonScriptPathForLiver = path.join(__dirname, '..', 'liver.py');
-const pythonScriptPathForBreastCancer = path.join(__dirname, '..', 'breast-cancer.py');
-
-const runPythonScript = (scriptPath, args, res) => {
-  let responseSent = false;
-  try {
-    const pythonProcess = spawn("python", [scriptPath, ...args]);
-    let prediction = "";
-
-    pythonProcess.stdout.on("data", (data) => {
-      console.log("Python script output:", data.toString());
-      prediction += data.toString();
-    });
-
-    pythonProcess.stderr.on("data", (data) => {
-      console.error("Python script error:", data.toString());
-    });
-
-    pythonProcess.on("close", (code) => {
-      console.log("Python process closed with code:", code);
-      console.log("Prediction:", prediction);
-      if (!responseSent) {
-        res.json({ prediction });
-        responseSent = true;
-      }
-    });
-
-    pythonProcess.on("error", (error) => {
-      console.error("Python process error:", error);
-      if (!responseSent) {
-        res.status(500).send("Internal Server Error");
-        responseSent = true;
-      }
-    });
-  } catch (error) {
-    console.error("Error:", error);
-    if (!responseSent) {
-      res.status(500).send("Internal Server Error");
-      responseSent = true;
+const getAiServiceUrl = () =>
+  process.env.AI_SERVICE_URL || "http://127.0.0.1:8001";
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (req, file, callback) => {
+    if (["image/png", "image/jpeg", "image/webp"].includes(file.mimetype)) {
+      callback(null, true);
+      return;
     }
+    callback(new Error("Upload a PNG, JPEG, or WebP image."));
+  },
+});
+
+const forwardJson = async (req, res, target) => {
+  try {
+    const response = await fetch(`${getAiServiceUrl()}${target}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(req.body),
+      signal: AbortSignal.timeout(95_000),
+    });
+    const payload = await response.json();
+    if (!response.ok) {
+      return res.status(response.status).json({
+        success: false,
+        message:
+          typeof payload.detail === "string"
+            ? payload.detail
+            : payload.detail?.message || "The screening service rejected the request.",
+        details: typeof payload.detail === "object" ? payload.detail : undefined,
+      });
+    }
+    return res.json({ success: true, prediction: payload.prediction });
+  } catch (error) {
+    console.error(`AI model service request failed (${target}):`, error.message);
+    return res.status(error.name === "TimeoutError" ? 504 : 503).json({
+      success: false,
+      message:
+        error.name === "TimeoutError"
+          ? "The screening request timed out."
+          : "The screening service is unavailable. Start the FastAPI service and try again.",
+    });
   }
 };
 
-
-router.post("/diabetes", (req, res) => {
-  const data = req.body.data;
-  runPythonScript(pythonScriptPathForDiabetes, ["--loads", diabetesModel, JSON.stringify(data)], res);
-});
-
-router.post("/heart", (req, res) => {
-  const data = req.body.data;
-  runPythonScript(pythonScriptPathForHeart, ["--loads", heartModel, JSON.stringify(data)], res);
-});
-
-router.post("/kidney", (req, res) => {
-  const data = req.body.data;
-  runPythonScript(pythonScriptPathForKidney, ["--loads", kidneyModel, JSON.stringify(data)], res);
-});
-
-router.post("/liver", (req, res) => {
-  const data = req.body.data;
-  runPythonScript(pythonScriptPathForLiver, ["--loads", liverModel, JSON.stringify(data)], res);
-});
-
-router.post("/breast-cancer", (req, res) => {
-  const data = req.body.data;
-  runPythonScript(pythonScriptPathForBreastCancer, ["--loads", breastCancerModel, JSON.stringify(data)], res);
-});
-
-// Multer storage configuration
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, path.resolve(`./public/uploads/`));
-  },
-  filename: function (req, file, cb) {
-    const fileName = `${Date.now()}-${file.originalname}`;
-    cb(null, fileName);
-  },
-});
-
-const upload = multer({ storage: storage });
-
-router.post("/predict-pneumonia", upload.single("image"), (req, res) => {
-  try {
-    const imagePath = req.file.path;
-    const pythonScriptPathForPneumonia = path.join(__dirname, '..', 'pneumonia.py');
-
-    // Using spawn("python", ...) instead of hardcoded path
-    const pythonProcess = spawn("python", [
-      pythonScriptPathForPneumonia,
-      imagePath,
-    ]);
-
-    let prediction = "";
-    let responseSent = false;
-
-    pythonProcess.stdout.on("data", (data) => {
-      console.log("Python script output:", data.toString());
-      prediction += data.toString();
-    });
-
-    pythonProcess.stderr.on("data", (data) => {
-      console.error("Python script error:", data.toString());
-    });
-
-    pythonProcess.on("close", (code) => {
-      console.log("Python process closed with code:", code);
-      console.log("Prediction:", prediction);
-      if (!responseSent) {
-        res.json({ prediction });
-        responseSent = true;
-      }
-    });
-
-    pythonProcess.on("error", (error) => {
-      console.error("Python process error:", error);
-      if (!responseSent) {
-        res.status(500).send("Internal Server Error");
-        responseSent = true;
-      }
-    });
-  } catch (error) {
-    console.error("Error:", error);
-    if (!responseSent) {
-      res.status(500).send("Internal Server Error");
-      responseSent = true;
-    }
+const forwardImage = async (req, res, modelName) => {
+  if (!req.file) {
+    return res.status(400).json({ success: false, message: "Choose an image to upload." });
   }
-});
 
-router.post("/predict-malaria", upload.single("image"), (req, res) => {
   try {
-    const imagePath = req.file.path;
-    const pythonScriptPathForMalaria = path.join(__dirname, '..', 'malaria.py');
-
-    const pythonProcess = spawn("python", [
-      pythonScriptPathForMalaria,
-      imagePath,
-    ]);
-
-    let prediction = "";
-    let responseSent = false;
-
-    pythonProcess.stdout.on("data", (data) => {
-      console.log("Python script output:", data.toString());
-      prediction += data.toString();
-    });
-
-    pythonProcess.stderr.on("data", (data) => {
-      console.error("Python script error:", data.toString());
-    });
-
-    pythonProcess.on("close", (code) => {
-      console.log("Python process closed with code:", code);
-      console.log("Prediction:", prediction);
-      if (!responseSent) {
-        res.json({ prediction });
-        responseSent = true;
-      }
-    });
-
-    pythonProcess.on("error", (error) => {
-      console.error("Python process error:", error);
-      if (!responseSent) {
-        res.status(500).send("Internal Server Error");
-        responseSent = true;
-      }
-    });
-  } catch (error) {
-    console.error("Error:", error);
-    if (!responseSent) {
-      res.status(500).send("Internal Server Error");
-      responseSent = true;
+    const formData = new FormData();
+    formData.append(
+      "image",
+      new Blob([req.file.buffer], { type: req.file.mimetype }),
+      req.file.originalname,
+    );
+    const response = await fetch(
+      `${getAiServiceUrl()}/api/v1/predict-image/${modelName}`,
+      { method: "POST", body: formData, signal: AbortSignal.timeout(95_000) },
+    );
+    const payload = await response.json();
+    if (!response.ok) {
+      const detail = payload.detail;
+      return res.status(response.status).json({
+        success: false,
+        message:
+          typeof detail === "string"
+            ? detail
+            : detail?.message || "The screening service rejected the image.",
+      });
     }
+    return res.json({ success: true, prediction: payload.prediction });
+  } catch (error) {
+    console.error(`AI image service request failed (${modelName}):`, error.message);
+    return res.status(error.name === "TimeoutError" ? 504 : 503).json({
+      success: false,
+      message:
+        error.name === "TimeoutError"
+          ? "The image screening request timed out."
+          : "The screening service is unavailable. Try again later.",
+    });
   }
-});
+};
+
+for (const modelName of ["diabetes", "heart", "kidney", "liver", "breast-cancer"]) {
+  router.post(`/${modelName}`, (req, res) =>
+    forwardJson(req, res, `/api/v1/predict/${modelName}`),
+  );
+}
+
+router.post("/predict-pneumonia", upload.single("image"), (req, res) =>
+  forwardImage(req, res, "pneumonia"),
+);
+router.post("/predict-malaria", upload.single("image"), (req, res) =>
+  forwardImage(req, res, "malaria"),
+);
 
 export default router;

@@ -1,5 +1,6 @@
-import React from "react";
 import { Link } from "react-router-dom";
+import { FaArrowRight } from "react-icons/fa6";
+import { healthTools } from "../data/healthTools";
 
 export const services = [
   {
@@ -42,29 +43,67 @@ export const services = [
 
 const Services = () => {
   return (
-    <section className="mx-auto max-w-6xl px-6 py-16">
-      <div className="mb-10 text-center">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">Our services</p>
-        <h2 className="mt-3 text-3xl font-bold text-slate-900">AI-powered medical support</h2>
+    <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
+      <div className="mx-auto mb-10 max-w-3xl text-center">
+        <p className="text-sm font-extrabold uppercase tracking-[0.18em] text-cyan-700">
+          Care for every step
+        </p>
+        <h1 className="mt-3 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
+          Medical services
+        </h1>
+        <p className="mt-4 leading-7 text-slate-600">
+          Explore doctor consultations, symptom guidance, and AI-assisted health
+          screening tools.
+        </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-        {services.map((service) => (
-          <div key={service.id} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="mb-4 inline-flex rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-700">
-              Care plan
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {healthTools.map(({ id, title, description, icon: Icon, tone, type }) => (
+          <article
+            key={id}
+            className="flex flex-col rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-cyan-200 hover:shadow-lg"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <span
+                className={`flex h-12 w-12 items-center justify-center rounded-2xl text-xl ${tone}`}
+              >
+                <Icon aria-hidden="true" />
+              </span>
+              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">
+                {type === "image" ? "Image" : "Health values"}
+              </span>
             </div>
-            <h3 className="text-xl font-semibold text-slate-900">{service.title}</h3>
-            <p className="mt-3 text-slate-600">{service.description}</p>
-
+            <h2 className="mt-5 text-xl font-extrabold text-slate-900">
+              {title}
+            </h2>
+            <p className="mt-2 flex-1 leading-6 text-slate-600">
+              {description}
+            </p>
             <Link
-              to={`/services/${service.id}`}
-              className="mt-5 inline-flex rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+              to={`/health-predict/${id}`}
+              className="mt-5 inline-flex items-center gap-2 font-extrabold text-cyan-800 hover:text-cyan-950"
             >
-              View details
+              Learn more <FaArrowRight aria-hidden="true" className="text-xs" />
             </Link>
-          </div>
+          </article>
         ))}
+      </div>
+
+      <div className="mt-8 flex flex-wrap items-center justify-between gap-5 rounded-3xl bg-[#eaf8f6] p-6 sm:p-8">
+        <div>
+          <h2 className="text-xl font-extrabold text-slate-900">
+            Looking for a care provider?
+          </h2>
+          <p className="mt-1 text-slate-600">
+            Browse approved doctor profiles and specialties.
+          </p>
+        </div>
+        <Link
+          to="/doctors"
+          className="rounded-full bg-cyan-700 px-5 py-3 font-bold text-white hover:bg-cyan-800"
+        >
+          Find a doctor
+        </Link>
       </div>
     </section>
   );

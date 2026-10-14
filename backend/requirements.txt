@@ -5,3 +5,9 @@ flask
 requests
 pillow
 tensorflow
+tf-keras
+fastapi
+uvicorn[standard]
+python-multipart
+httpx
+pytest

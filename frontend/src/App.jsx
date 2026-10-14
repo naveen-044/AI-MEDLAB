@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import { useContext, useEffect } from "react";
 import Layout from "./layout/Layout";
 import Admin from "./layout/Admin-Layout.jsx";
 import { authContext } from "./context/AuthContext";

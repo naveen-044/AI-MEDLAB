@@ -46,10 +46,10 @@ const AdminHome = () => {
         ))}
       </div>
       <div className="mb-6 grid grid-cols-1 gap-y-12 gap-x-6 md:grid-cols-2 xl:grid-cols-3">
-        {statisticsChartsData.map((props) => (
+        {statisticsChartsData.map((chart) => (
           <StatisticsChart
-            key={props.title}
-            {...props}
+            key={chart.title}
+            {...chart}
             footer={
               <Typography
                 variant="small"
@@ -59,7 +59,7 @@ const AdminHome = () => {
                   strokeWidth={2}
                   className="h-4 w-4 text-blue-gray-400"
                 />
-                &nbsp;{props.footer}
+                &nbsp;{chart.footer}
               </Typography>
             }
           />

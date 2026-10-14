@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { BASE_URL, token } from "../config.js";
 import useFetchData from "../hooks/useFetchData.jsx";
 import defaultImg from "../assets/images/default.avif";

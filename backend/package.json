@@ -6,7 +6,8 @@
   "main": "index.js",
   "scripts": {
     "install-python-dependencies": "pip install -r requirements.txt",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "python -m pytest ai_service/tests -q",
+    "start-ai": "python -m uvicorn ai_service.main:app --host 127.0.0.1 --port 8001",
     "start": "node index.js",
     "start-dev": "nodemon index.js"
   },

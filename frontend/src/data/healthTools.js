@@ -1,0 +1,181 @@
+import {
+  FaBrain,
+  FaDroplet,
+  FaFlask,
+  FaHeartPulse,
+  FaLungs,
+  FaMicroscope,
+  FaVirus,
+} from "react-icons/fa6";
+
+export const healthTools = [
+  {
+    id: "diabetes",
+    title: "Diabetes screening",
+    description: "Review common health measurements associated with diabetes risk.",
+    icon: FaDroplet,
+    tone: "bg-violet-50 text-violet-700",
+    type: "numbers",
+  },
+  {
+    id: "heart",
+    title: "Heart health",
+    description: "Screen cardiovascular indicators with an AI-assisted model.",
+    icon: FaHeartPulse,
+    tone: "bg-rose-50 text-rose-700",
+    type: "numbers",
+  },
+  {
+    id: "kidney",
+    title: "Kidney health",
+    description: "Review selected kidney health measurements and indicators.",
+    icon: FaFlask,
+    tone: "bg-cyan-50 text-cyan-800",
+    type: "numbers",
+  },
+  {
+    id: "liver",
+    title: "Liver health",
+    description: "Check selected liver-related health measurements.",
+    icon: FaMicroscope,
+    tone: "bg-amber-50 text-amber-800",
+    type: "numbers",
+  },
+  {
+    id: "breast-cancer",
+    title: "Breast screening",
+    description: "Explore a model-assisted screening based on cell measurements.",
+    icon: FaBrain,
+    tone: "bg-pink-50 text-pink-700",
+    type: "numbers",
+  },
+  {
+    id: "malaria",
+    title: "Malaria image screening",
+    description: "Submit a blood-cell image for AI-assisted pattern screening.",
+    icon: FaVirus,
+    tone: "bg-emerald-50 text-emerald-700",
+    type: "image",
+  },
+  {
+    id: "pneumonia",
+    title: "Pneumonia image screening",
+    description: "Submit a chest X-ray image for AI-assisted pattern screening.",
+    icon: FaLungs,
+    tone: "bg-sky-50 text-sky-700",
+    type: "image",
+  },
+];
+
+const diabetesFields = [
+  ["preg", "Pregnancies", "number"],
+  ["plas", "Glucose", "number"],
+  ["pres", "Blood pressure", "number"],
+  ["skin", "Skin thickness", "number"],
+  ["insu", "Insulin", "number"],
+  ["mass", "BMI", "number"],
+  ["pedi", "Diabetes pedigree function", "decimal"],
+  ["age", "Age", "number"],
+];
+
+const heartFields = [
+  ["age", "Age", "number"],
+  ["sex", "Sex (0 or 1)", "number"],
+  ["cp", "Chest pain type (0–3)", "number"],
+  ["trestbps", "Resting blood pressure", "number"],
+  ["chol", "Serum cholesterol", "number"],
+  ["fbs", "Fasting blood sugar > 120 (0 or 1)", "number"],
+  ["restecg", "Resting ECG (0–2)", "number"],
+  ["thalach", "Maximum heart rate", "number"],
+  ["exang", "Exercise-induced angina (0 or 1)", "number"],
+  ["oldpeak", "ST depression", "decimal"],
+  ["slope", "ST slope (0–2)", "number"],
+  ["ca", "Major vessels (0–4)", "number"],
+  ["thal", "Thalassemia (0–3)", "number"],
+];
+
+const kidneyFields = [
+  ["Age", "Age", "number"],
+  ["BP", "Blood pressure", "number"],
+  ["AL", "Albumin", "number"],
+  ["SU", "Sugar", "number"],
+  ["RBC", "Red blood cells (0 or 1)", "number"],
+  ["PC", "Pus cells (0 or 1)", "number"],
+  ["PCC", "Pus cell clumps (0 or 1)", "number"],
+  ["BA", "Bacteria (0 or 1)", "number"],
+  ["BGR", "Blood glucose random", "number"],
+  ["BU", "Blood urea", "decimal"],
+  ["SC", "Serum creatinine", "decimal"],
+  ["POT", "Potassium", "decimal"],
+  ["WC", "White blood cell count", "number"],
+  ["HTN", "Hypertension (0 or 1)", "number"],
+  ["DM", "Diabetes mellitus (0 or 1)", "number"],
+  ["CAD", "Coronary artery disease (0 or 1)", "number"],
+  ["PE", "Pedal edema (0 or 1)", "number"],
+  ["ANE", "Anemia (0 or 1)", "number"],
+];
+
+const liverFields = [
+  ["Age", "Age", "number"],
+  ["Gender", "Gender (0 or 1)", "number"],
+  ["Total_Bilirubin", "Total bilirubin", "decimal"],
+  ["Direct_Bilirubin", "Direct bilirubin", "decimal"],
+  ["Alkaline_Phosphotase", "Alkaline phosphatase", "number"],
+  ["Alamine_Aminotransferase", "Alanine aminotransferase", "number"],
+  ["Aspartate_Aminotransferase", "Aspartate aminotransferase", "number"],
+  ["Total_Protiens", "Total proteins", "decimal"],
+  ["Albumin", "Albumin", "decimal"],
+  ["Albumin_and_Globulin_Ratio", "Albumin / globulin ratio", "decimal"],
+];
+
+const cancerMeasurements = [
+  "mean radius",
+  "mean texture",
+  "mean perimeter",
+  "mean area",
+  "mean smoothness",
+  "mean compactness",
+  "mean concavity",
+  "mean concave points",
+  "mean symmetry",
+  "mean fractal dimension",
+  "radius error",
+  "texture error",
+  "perimeter error",
+  "area error",
+  "smoothness error",
+  "compactness error",
+  "concavity error",
+  "concave points error",
+  "symmetry error",
+  "fractal dimension error",
+  "worst radius",
+  "worst texture",
+  "worst perimeter",
+  "worst area",
+  "worst smoothness",
+  "worst compactness",
+  "worst concavity",
+  "worst concave points",
+  "worst symmetry",
+  "worst fractal dimension",
+];
+
+const asFields = (fields) =>
+  fields.map(([name, label, inputType]) => ({
+    name,
+    label,
+    step: inputType === "decimal" ? "any" : "1",
+  }));
+
+export const healthToolFields = {
+  diabetes: asFields(diabetesFields),
+  heart: asFields(heartFields),
+  kidney: asFields(kidneyFields),
+  liver: asFields(liverFields),
+  "breast-cancer": cancerMeasurements.map((name) => ({
+    name,
+    label: name.replace(/\b\w/g, (letter) => letter.toUpperCase()),
+    step: "any",
+  })),
+};

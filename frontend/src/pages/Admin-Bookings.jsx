@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-import { BASE_URL, token } from "../config.js";
+import { BASE_URL } from "../config";
 import useFetchData from "../hooks/useFetchData.jsx";
 import { PiGenderFemaleBold } from "react-icons/pi";
 import { MdPayments } from "react-icons/md";
@@ -11,53 +10,11 @@ import Loading from "../components/Loader/Loading.jsx";
 import Error from "../components/Error/Error.jsx";
 
 const AdminBookings = () => {
-  const [users, setUsers] = useState({});
-  const [doctors, setDoctors] = useState({});
-
   const {
     data: bookings,
     loading,
     error,
   } = useFetchData(`${BASE_URL}/admin/bookings`);
-
-  // console.log("call users");
-
-  const getAllUsersData = async () => {
-    try {
-      const response = await fetch(`${BASE_URL}/admin/users`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const data = await response.json();
-      console.log("Users data:", data);
-      setUsers(data);
-    } catch (error) {
-      console.log("Error fetching users:", error);
-    }
-  };
-
-  const getAllDoctorsData = async () => {
-    try {
-      const response = await fetch(`${BASE_URL}/admin/doctors`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const data = await response.json();
-      console.log("Doctors data:", data);
-      setDoctors(data);
-    } catch (error) {
-      console.log("Error fetching doctors:", error);
-    }
-  };
-
-  useEffect(() => {
-    getAllUsersData();
-    getAllDoctorsData();
-  }, []);
 
   return (
     <>

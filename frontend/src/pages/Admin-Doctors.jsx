@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { BASE_URL, token } from "../config.js";
 import useFetchData from "../hooks/useFetchData.jsx";

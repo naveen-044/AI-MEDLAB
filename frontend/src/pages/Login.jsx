@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { BASE_URL } from "../config";
 import { toast } from "react-toastify";
@@ -98,7 +98,7 @@ const Login = () => {
             </button>
           </div>
           <p className="mt-5 text-textColor text-center">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link to="/register" className="text-primaryColor font-medium ml-1">
               Register
             </Link>

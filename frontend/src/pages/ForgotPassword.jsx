@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { BASE_URL } from "../config";
 import { toast } from "react-toastify";
@@ -75,9 +75,10 @@ const ForgotPassword = () => {
           <div className="mt-5 text-center">
             <button
               type="submit"
+              disabled={loading}
               className="p-3 rounded-xl cursor-pointer bg-primaryColor text-white text-2xl font-semibold"
             >
-              Submit
+              {loading ? "Submitting..." : "Submit"}
             </button>
           </div>
         </form>

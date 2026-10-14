@@ -1,59 +1,41 @@
 import express from "express";
-import { spawn } from "child_process";
-import path from "path";
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const router = express.Router({ mergeParams: true });
+const getAiServiceUrl = () =>
+  process.env.AI_SERVICE_URL || "http://127.0.0.1:8001";
 
-const pythonScriptPathForSymptoms = path.join(__dirname, '..', 'symptoms.py');
-const symptomsModel = path.join(__dirname, '..', 'aimodels', 'svc.pkl');
-
-router.post("/symptoms", (req, res) => {
-  let responseSent = false;
+router.post("/symptoms", async (req, res) => {
   try {
-    const data = req.body.data;
-    console.log({ dataInString: JSON.stringify({ data }) });
-    const pythonProcess = spawn("python", [
-      pythonScriptPathForSymptoms,
-      "--loads",
-      symptomsModel,
-      JSON.stringify({ data }),
-    ]);
-    let prediction;
-    pythonProcess.stdout.on("data", (data) => {
-      const dataString = data.toString();
-      console.log("Python script output===========:", JSON.parse(dataString));
-      prediction = JSON.parse(dataString);
-    });
-
-    pythonProcess.stderr.on("data", (data) => {
-      console.error("Python script error:", data.toString());
-    });
-
-    pythonProcess.on("close", (code) => {
-      console.log("Python process closed with code:", code);
-      console.log("Prediction:", prediction);
-      if (!responseSent) {
-        res.json({ data: prediction });
-        responseSent = true;
-      }
-    });
-    pythonProcess.on("error", (error) => {
-      console.error("Python process error:", error);
-      if (!responseSent) {
-        res.status(500).send("Internal Server Error");
-        responseSent = true;
-      }
-    });
-  } catch (error) {
-    console.error("Error:", error);
-    if (!responseSent) {
-      responseSent = true;
-      return res.status(500).send("Internal Server Error");
+    const response = await fetch(
+      `${getAiServiceUrl()}/api/v1/predict-symptoms`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(req.body),
+        signal: AbortSignal.timeout(95_000),
+      },
+    );
+    const payload = await response.json();
+    if (!response.ok) {
+      const detail = payload.detail;
+      return res.status(response.status).json({
+        success: false,
+        message:
+          typeof detail === "string"
+            ? detail
+            : detail?.message || "The symptom screening service rejected the request.",
+      });
     }
+    return res.json({ success: true, data: payload.prediction });
+  } catch (error) {
+    console.error("Symptom model service request failed:", error.message);
+    return res.status(error.name === "TimeoutError" ? 504 : 503).json({
+      success: false,
+      message:
+        error.name === "TimeoutError"
+          ? "The symptom screening request timed out."
+          : "The screening service is unavailable. Start the FastAPI service and try again.",
+    });
   }
 });
 

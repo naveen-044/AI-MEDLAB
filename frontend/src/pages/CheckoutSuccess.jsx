@@ -1,38 +1,114 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import { useContext, useEffect, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
+import { FaCircleCheck, FaCircleExclamation } from "react-icons/fa6";
+import { authContext } from "../context/AuthContext.jsx";
+import { BASE_URL } from "../config";
 
 const CheckoutSuccess = () => {
+  const [searchParams] = useSearchParams();
+  const { token } = useContext(authContext);
+  const [status, setStatus] = useState("checking");
+  const [message, setMessage] = useState("");
+  const sessionId = searchParams.get("session_id");
+  const isDemo = searchParams.get("mode") === "demo";
+
+  useEffect(() => {
+    if (isDemo) {
+      setStatus("demo");
+      setMessage("This was a demonstration checkout. No payment was collected.");
+      return undefined;
+    }
+    if (!sessionId || !token) {
+      setStatus("unverified");
+      setMessage(
+        !sessionId
+          ? "No payment session was provided, so payment cannot be confirmed."
+          : "Sign in to the same patient account to verify payment status.",
+      );
+      return undefined;
+    }
+
+    const controller = new AbortController();
+    const verifyPayment = async () => {
+      try {
+        const response = await fetch(
+          `${BASE_URL}/bookings/checkout-session/${encodeURIComponent(sessionId)}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+            signal: controller.signal,
+          },
+        );
+        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(result.message || "Payment status could not be verified.");
+        }
+        setStatus(result.paid ? "paid" : "unpaid");
+        setMessage(result.message || "Payment status received.");
+      } catch (error) {
+        if (error.name !== "AbortError") {
+          setStatus("unverified");
+          setMessage(error.message || "Payment status could not be verified.");
+        }
+      }
+    };
+    verifyPayment();
+    return () => controller.abort();
+  }, [isDemo, sessionId, token]);
+
+  const confirmed = status === "paid";
+  const demo = status === "demo";
+  const checking = status === "checking";
+
   return (
-    <div className="bg-gray-100 h-screen">
-      <div className="bg-white p-6 md:mx-auto">
-        <svg
-          viewBox="0 0 24 24"
-          className="text-green-600 w-16 h-16 mx-auto my-6"
-        >
-          <path
-            fill="greenColor"
-            d="M12, 0A12, 12,0,1,0,24,12,12.014,0,0,0,12,0Zm6.927,8.2-6.845,9.289a1.011,1.011,0,0,1-1.43.188L5.764,13.769a1,1,0,1,1,1.25-1.562l4.076,3.261,6.227-8.451A1,1,0,1,1,18.927,8.2Z"
-          ></path>
-        </svg>
-        <div className="text-center">
-          <h3 className="md:text-2xl text-base text-gray-900 font-semibold text-center">
-            Payment Done!
-          </h3>
-          <p className="text-gray-600 my-2">
-            Thank you for completing your secure online payment.
-          </p>
-          <p>Have a great day!</p>
-          <div className="py-10 text-center">
-            <Link
-              to="/home"
-              className="px-12 bg-buttonBgColor text-white font-semibold py-3"
-            >
-              Go Back To Home
-            </Link>
-          </div>
+    <section className="mx-auto flex min-h-[65vh] max-w-3xl items-center px-5 py-12">
+      <div className="w-full rounded-3xl border border-slate-200 bg-white p-7 text-center shadow-lg shadow-slate-900/5 sm:p-12">
+        {confirmed ? (
+          <FaCircleCheck aria-hidden="true" className="mx-auto text-6xl text-emerald-600" />
+        ) : (
+          <FaCircleExclamation
+            aria-hidden="true"
+            className={`mx-auto text-6xl ${demo ? "text-cyan-700" : "text-amber-600"}`}
+          />
+        )}
+        <p className="mt-6 text-sm font-extrabold uppercase tracking-[0.16em] text-cyan-800">
+          {checking ? "Verifying checkout" : demo ? "Demo checkout" : "Payment status"}
+        </p>
+        <h1 className="mt-2 text-3xl font-extrabold text-slate-900">
+          {checking
+            ? "Checking payment confirmation…"
+            : confirmed
+              ? "Payment confirmed"
+              : demo
+                ? "No payment was taken"
+                : "Payment not confirmed"}
+        </h1>
+        <p role="status" className="mx-auto mt-4 max-w-xl leading-7 text-slate-600">
+          {message}
+        </p>
+        {status === "unverified" && !token && sessionId && (
+          <Link
+            to="/login"
+            className="mt-6 inline-flex rounded-full bg-cyan-700 px-6 py-3 font-extrabold text-white hover:bg-cyan-800"
+          >
+            Sign in to verify
+          </Link>
+        )}
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
+          <Link
+            to="/home"
+            className="inline-flex rounded-full bg-cyan-700 px-6 py-3 font-extrabold text-white hover:bg-cyan-800"
+          >
+            Go to home
+          </Link>
+          <Link
+            to="/doctors"
+            className="inline-flex rounded-full border border-slate-200 px-6 py-3 font-extrabold text-slate-700 hover:bg-slate-50"
+          >
+            Browse doctors
+          </Link>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 
