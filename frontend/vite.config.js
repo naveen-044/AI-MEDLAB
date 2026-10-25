@@ -1,10 +1,12 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import vitepluginrewriteall from "vite-plugin-rewrite-all";
+import vitePluginRewriteAll from "vite-plugin-rewrite-all";
 
 export default defineConfig({
-  plugins: [react(), vitepluginrewriteall()],
+  plugins: [react(), vitePluginRewriteAll()],
   resolve: {
-    alias: [{ find: "@", replacement: "/src" }],
+    alias: {
+      "@": "/src",
+    },
   },
 });
