@@ -21,7 +21,7 @@ const __dirname = path.dirname(__filename);
 
 dotenv.config({ path: path.join(__dirname, '.env') });
 
-process.env.MONGO_URL = process.env.MONGO_URL || 'mongodb://localhost:27017/aimedlab';
+process.env.MONGO_URL = process.env.MONGO_URL || '';
 process.env.JWT_SECRET_KEY = process.env.JWT_SECRET_KEY || 'your_secret_key_here';
 
 const app = express();
@@ -29,7 +29,7 @@ const port = process.env.PORT || 8000;
 
 const allowedOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(",").map((origin) => origin.trim())
-  : ["http://localhost:5173", "https://ai-medlab-theta.vercel.app"];
+  : ["http://ai-medlab-theta.vercel.app", "https://ai-medlab-theta.vercel.app"];
 const corsOptions = { origin: allowedOrigins };
 
 app.get("/", (req, res) => {
