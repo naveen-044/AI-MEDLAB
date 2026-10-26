@@ -24,8 +24,11 @@ const __dirname = path.dirname(__filename);
 
 dotenv.config({ path: path.join(__dirname, ".env") });
 
-process.env.MONGO_URL = process.env.MONGO_URL || "";
-process.env.JWT_SECRET_KEY = process.env.JWT_SECRET_KEY || "your_secret_key_here";
+process.env.MONGO_URL =
+  process.env.MONGO_URL ||
+  "mongodb+srv://naveenkumar:Naveennani@cluster0.ogm15vv.mongodb.net/ai-medlab?retryWrites=true&w=majority";
+process.env.JWT_SECRET_KEY =
+  process.env.JWT_SECRET_KEY || "aimedlab_super_secret_jwt_key_2026_secured";
 
 const app = express();
 const port = process.env.PORT || 8000;
