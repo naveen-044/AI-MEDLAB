@@ -13,6 +13,4 @@ try {
       fs.cpSync(src, dest, { recursive: true });
     }
   }
-} catch (err) {
-  //
-}
+} catch (err) {}
