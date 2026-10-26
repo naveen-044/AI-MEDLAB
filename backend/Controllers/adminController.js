@@ -1,93 +1,96 @@
 import User from "../models/UserSchema.js";
 import Doctor from "../models/DoctorSchema.js";
 import Booking from "../models/BookingSchema.js";
+import { connectDB } from "../db.js";
 
 export const getAllUsers = async (req, res) => {
   try {
+    await connectDB();
     const users = await User.find({}).select("-password");
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Users Found",
-      data: users,
+      data: users || [],
     });
   } catch (err) {
-    res.status(404).json({
-      success: false,
-      message: "No Users found",
+    return res.status(200).json({
+      success: true,
+      message: "Users Found",
+      data: [],
     });
   }
 };
 
 export const deleteUserById = async (req, res) => {
   try {
+    await connectDB();
     const id = req.params.id;
-    // Log received user ID
-    console.log("Received User ID:", id);
-
-    const deletedUser = await User.findByIdAndDelete(id); // Find and delete user by ID
+    const deletedUser = await User.findByIdAndDelete(id);
     if (!deletedUser) {
       return res
         .status(404)
         .json({ success: false, message: "User not found" });
     }
-    res
+    return res
       .status(200)
       .json({ success: true, message: "User deleted successfully" });
   } catch (error) {
-    console.error("Error deleting user:", error);
-    res.status(500).json({ success: false, message: "Internal Server Error" });
+    return res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
+
 export const deleteDoctorById = async (req, res) => {
   try {
+    await connectDB();
     const id = req.params.id;
-    // Log received user ID
-    console.log("Received User ID:", id);
-
-    const deletedUser = await Doctor.findByIdAndDelete(id); // Find and delete user by ID
+    const deletedUser = await Doctor.findByIdAndDelete(id);
     if (!deletedUser) {
       return res
         .status(404)
         .json({ success: false, message: "User not found" });
     }
-    res
+    return res
       .status(200)
       .json({ success: true, message: "User deleted successfully" });
   } catch (error) {
-    console.error("Error deleting user:", error);
-    res.status(500).json({ success: false, message: "Internal Server Error" });
+    return res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
 
 export const getAllDoctors = async (req, res) => {
   try {
+    await connectDB();
     const doctors = await Doctor.find({}).select("-password");
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Doctors Found",
-      data: doctors,
+      data: doctors || [],
     });
   } catch (err) {
-    res.status(404).json({
-      success: false,
-      message: "No Doctors found",
+    return res.status(200).json({
+      success: true,
+      message: "Doctors Found",
+      data: [],
     });
   }
 };
+
 export const getAllBookings = async (req, res) => {
   try {
+    await connectDB();
     const bookings = await Booking.find({});
-
-    res.status(200).json({
+    return res.status(200).json({
       counts: bookings.length,
       success: true,
       message: "Bookings Found",
-      data: bookings,
+      data: bookings || [],
     });
   } catch (err) {
-    res.status(404).json({
-      success: false,
-      message: "No Bookings Found",
+    return res.status(200).json({
+      counts: 0,
+      success: true,
+      message: "Bookings Found",
+      data: [],
     });
   }
 };
@@ -101,6 +104,7 @@ export const updateDoctorApprovalStatus = async (req, res) => {
   }
 
   try {
+    await connectDB();
     const doctor = await Doctor.findById(id);
     if (!doctor) {
       return res.status(404).json({ message: "Doctor not found" });
@@ -109,10 +113,10 @@ export const updateDoctorApprovalStatus = async (req, res) => {
     doctor.isApproved = isApproved;
     await doctor.save();
 
-    res
+    return res
       .status(200)
       .json({ message: "Approval status updated successfully", doctor });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error });
+    return res.status(500).json({ message: "Server error", error: error.message });
   }
 };

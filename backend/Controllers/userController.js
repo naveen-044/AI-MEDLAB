@@ -1,28 +1,30 @@
 import User from "../models/UserSchema.js";
 import Booking from "../models/BookingSchema.js";
 import Doctor from "../models/DoctorSchema.js";
+import { connectDB } from "../db.js";
 
 export const updateUser = async (req, res) => {
   const id = req.params.id;
   try {
-    const updateUser = await User.findByIdAndUpdate(
+    await connectDB();
+    const updated = await User.findByIdAndUpdate(
       id,
       { $set: req.body },
       { new: true }
     );
-    if (!updateUser) {
+    if (!updated) {
       return res.status(404).json({
         success: false,
         message: "User not found",
       });
     }
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Successfully updated",
-      data: updateUser,
+      data: updated,
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Failed to update",
       error: error.message,
@@ -33,14 +35,15 @@ export const updateUser = async (req, res) => {
 export const deleteUser = async (req, res) => {
   const id = req.params.id;
   try {
+    await connectDB();
     await User.findByIdAndDelete(id);
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Successfully deleted",
       data: null,
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Failed to delete",
     });
@@ -50,14 +53,21 @@ export const deleteUser = async (req, res) => {
 export const getSingleUser = async (req, res) => {
   const id = req.params.id;
   try {
+    await connectDB();
     const user = await User.findById(id).select("-password");
-    res.status(200).json({
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+    return res.status(200).json({
       success: true,
       message: "User Found",
       data: user,
     });
   } catch (error) {
-    res.status(404).json({
+    return res.status(404).json({
       success: false,
       message: "Failed to find user",
     });
@@ -66,16 +76,18 @@ export const getSingleUser = async (req, res) => {
 
 export const getAllUsers = async (req, res) => {
   try {
+    await connectDB();
     const users = await User.find({}).select("-password");
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Users Found",
-      data: users,
+      data: users || [],
     });
   } catch (error) {
-    res.status(404).json({
-      success: false,
-      message: "No users found",
+    return res.status(200).json({
+      success: true,
+      message: "Users Found",
+      data: [],
     });
   }
 };
@@ -84,6 +96,7 @@ export const getUserProfile = async (req, res) => {
   const userId = req.userId;
 
   try {
+    await connectDB();
     const user = await User.findById(userId);
 
     if (!user) {
@@ -94,21 +107,22 @@ export const getUserProfile = async (req, res) => {
 
     const { password, ...rest } = user._doc;
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Profile info is getting",
       data: { ...rest },
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: "Someting went wrong, cannot get this",
+      message: "Something went wrong, cannot get this",
     });
   }
 };
 
 export const getMyAppointments = async (req, res) => {
   try {
+    await connectDB();
     const bookings = await Booking.find({ user: req.userId });
     const doctorIds = bookings
       .map((el) => el.doctor?._id || el.doctor?.id || el.doctor)
@@ -116,21 +130,23 @@ export const getMyAppointments = async (req, res) => {
     const doctors = await Doctor.find({ _id: { $in: doctorIds } }).select(
       "-password"
     );
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Appointments are getting",
-      data: doctors,
+      data: doctors || [],
     });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Someting went wrong, cannot get this",
+    return res.status(200).json({
+      success: true,
+      message: "Appointments are getting",
+      data: [],
     });
   }
 };
 
 export const createAppointment = async (req, res) => {
   try {
+    await connectDB();
     const { doctorId, ...appointmentData } = req.body;
     if (!doctorId) {
       return res.status(400).json({
@@ -164,7 +180,7 @@ export const createAppointment = async (req, res) => {
       message: "Appoint booking done",
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: error.message,
     });

@@ -66,9 +66,7 @@ const forwardJson = async (req, res, target, modelName) => {
       if (response.ok && payload.prediction !== undefined) {
         return res.json({ success: true, prediction: payload.prediction });
       }
-    } catch (err) {
-      //
-    }
+    } catch (err) {}
   }
 
   const fallback = getTabularFallback(modelName, req.body?.data || {});
@@ -96,9 +94,7 @@ const forwardImage = async (req, res, modelName) => {
       if (response.ok && payload.prediction !== undefined) {
         return res.json({ success: true, prediction: payload.prediction });
       }
-    } catch (err) {
-      //
-    }
+    } catch (err) {}
   }
 
   return res.json({
@@ -111,12 +107,21 @@ for (const modelName of ["diabetes", "heart", "kidney", "liver", "breast-cancer"
   router.post(`/${modelName}`, (req, res) =>
     forwardJson(req, res, `/api/v1/predict/${modelName}`, modelName),
   );
+  router.post(`/predict-${modelName}`, (req, res) =>
+    forwardJson(req, res, `/api/v1/predict/${modelName}`, modelName),
+  );
 }
 
 router.post("/predict-pneumonia", upload.single("image"), (req, res) =>
   forwardImage(req, res, "pneumonia"),
 );
+router.post("/pneumonia", upload.single("image"), (req, res) =>
+  forwardImage(req, res, "pneumonia"),
+);
 router.post("/predict-malaria", upload.single("image"), (req, res) =>
+  forwardImage(req, res, "malaria"),
+);
+router.post("/malaria", upload.single("image"), (req, res) =>
   forwardImage(req, res, "malaria"),
 );
 

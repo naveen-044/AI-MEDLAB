@@ -1,4 +1,3 @@
-// Load data and model
 const symptoms_dict = {
   itching: 0,
   skin_rash: 1,
