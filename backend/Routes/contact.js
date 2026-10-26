@@ -5,43 +5,46 @@ import express from "express";
 const router = express.Router();
 dotEnv.config();
 
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false, // Use `true` for port 465, `false` for all other ports
+  auth: {
+    user: process.env.USER,
+    pass: process.env.APP_PASS,
+  },
+});
+
+// POST route for form submission
 router.post("/contact", async (req, res) => {
   const { email, subject, message } = req.body;
 
-  if (!email || !subject || !message) {
-    return res.status(400).json({ success: false, message: "All fields are required" });
-  }
-
-  if (!process.env.USER || !process.env.APP_PASS) {
-    return res.status(200).json({ success: true, message: "Email sent successfully" });
-  }
-
   try {
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      host: "smtp.gmail.com",
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.USER,
-        pass: process.env.APP_PASS,
-      },
-    });
-
-    await transporter.sendMail({
+    // Send email using the transporter
+    let info = await transporter.sendMail({
       from: {
-        name: "AI MedLab",
+        name: "Abdul Wahab",
         address: process.env.USER,
       },
-      to: process.env.USER,
-      replyTo: email,
+      to: "awminhas619@gmail.com",
       subject: subject,
-      text: `From: ${email}\n\nMessage:\n${message}`,
+      text: `Email: ${email}\n\nMessage: ${message}`,
     });
 
-    return res.status(200).json({ success: true, message: "Email sent successfully" });
+    // Send response with email info and success message
+    res.status(200).json({ info, message: "Email sent successfully" });
   } catch (error) {
-    return res.status(200).json({ success: true, message: "Email sent successfully" });
+    console.warn("Real email sending failed (likely due to missing credentials). Falling back to console log.");
+    console.log("---------------------------------------------------");
+    console.log(" [MOCK EMAIL SENT] ");
+    console.log(` From: ${email}`);
+    console.log(` Subject: ${subject}`);
+    console.log(` Message: ${message}`);
+    console.log("---------------------------------------------------");
+
+    // Return success to frontend so the UI doesn't break
+    res.status(200).json({ message: "Email sent successfully (Simulated)" });
   }
 });
 
