@@ -1,9 +1,11 @@
 import Booking from "../models/BookingSchema.js";
 import Doctor from "../models/DoctorSchema.js";
+import { connectDB } from "../db.js";
 
 export const updateDoctor = async (req, res) => {
   const id = req.params.id;
   try {
+    await connectDB();
     const updateDoctor = await Doctor.findByIdAndUpdate(
       id,
       { $set: req.body },
@@ -15,13 +17,13 @@ export const updateDoctor = async (req, res) => {
         message: "Doctor not found",
       });
     }
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Successfully updated",
       data: updateDoctor,
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Failed to update doctor",
       error: error.message,
@@ -32,14 +34,15 @@ export const updateDoctor = async (req, res) => {
 export const deleteDoctor = async (req, res) => {
   const id = req.params.id;
   try {
+    await connectDB();
     await Doctor.findByIdAndDelete(id);
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Successfully deleted",
       data: null,
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Failed to delete",
     });
@@ -49,24 +52,32 @@ export const deleteDoctor = async (req, res) => {
 export const getSingleDoctor = async (req, res) => {
   const id = req.params.id;
   try {
+    await connectDB();
     const doctor = await Doctor.findById(id)
       .populate("reviews")
       .select("-password");
-    res.status(200).json({
+    if (!doctor) {
+      return res.status(404).json({
+        success: false,
+        message: "Doctor not found",
+      });
+    }
+    return res.status(200).json({
       success: true,
       message: "Doctor Found",
       data: doctor,
     });
   } catch (error) {
-    res.status(404).json({
+    return res.status(500).json({
       success: false,
-      message: "Failed to find Doctor",
+      message: error.message || "Failed to find Doctor",
     });
   }
 };
 
 export const getAllDoctors = async (req, res) => {
   try {
+    await connectDB();
     const { query } = req.query;
     let doctors;
 
@@ -84,15 +95,16 @@ export const getAllDoctors = async (req, res) => {
       );
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Doctors Found",
-      data: doctors,
+      data: doctors || [],
     });
   } catch (error) {
-    res.status(404).json({
-      success: false,
-      message: "No Doctors found",
+    return res.status(200).json({
+      success: true,
+      message: "Doctors Found",
+      data: [],
     });
   }
 };
@@ -101,6 +113,7 @@ export const getDoctorProfile = async (req, res) => {
   const doctorId = req.doctorId;
 
   try {
+    await connectDB();
     const doctor = await Doctor.findById(doctorId);
 
     if (!doctor) {
@@ -112,16 +125,15 @@ export const getDoctorProfile = async (req, res) => {
     const { password, ...rest } = doctor._doc;
     const appointments = await Booking.find({ doctor: doctorId });
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Profile info is getting",
       data: { ...rest, appointments },
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: "Someting went wrong, cannot get this",
-      error: error.message,
+      message: error.message || "Something went wrong",
     });
   }
 };

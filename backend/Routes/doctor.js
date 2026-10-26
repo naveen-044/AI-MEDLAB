@@ -11,17 +11,15 @@ import reviewRouter from "./review.js";
 
 const router = express.Router();
 
-//nested route
 router.use("/:doctorId/reviews", reviewRouter);
 
-// Get doctor's profile
 router.get("/profile/me", authenticate, restrict(["doctor"]), (req, res) => {
-  getDoctorProfile(req, res); // Call the controller function
+  getDoctorProfile(req, res);
 });
 
-router.get("/:id", getSingleDoctor); // Fetch a single Doctor
-router.get("/", getAllDoctors); // Fetch all Doctors
-router.delete("/:id", authenticate, restrict(["doctor"]), deleteDoctor); // Delete a Doctor
-router.put("/:id", authenticate, restrict(["doctor"]), updateDoctor); // Update a doctor
+router.get("/", getAllDoctors);
+router.get("/:id", getSingleDoctor);
+router.delete("/:id", authenticate, restrict(["doctor"]), deleteDoctor);
+router.put("/:id", authenticate, restrict(["doctor"]), updateDoctor);
 
 export default router;
