@@ -56,6 +56,14 @@ app.options("*", cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 
+app.use((req, res, next) => {
+  const original = req.headers["x-matched-path"] || req.headers["x-vercel-matched-path"];
+  if (original && !original.endsWith(".js") && original !== req.url) {
+    req.url = original;
+  }
+  next();
+});
+
 app.use(async (req, res, next) => {
   if (process.env.MONGO_URL) {
     await connectDB();
@@ -101,6 +109,8 @@ const mountRoutes = (prefix) => {
 
 mountRoutes("/api/v1");
 mountRoutes("/v1");
+mountRoutes("/api");
+mountRoutes("");
 
 app.use((error, req, res, next) => {
   if (res.headersSent) return next(error);
