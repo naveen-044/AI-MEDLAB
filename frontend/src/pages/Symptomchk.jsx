@@ -29,7 +29,6 @@ const toList = (value) => {
       return toList(parsed);
     }
   } catch {
-    // Some project datasets are stored as Python-style list strings.
   }
 
   if (normalized.includes("Name: workout")) {

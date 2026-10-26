@@ -42,7 +42,7 @@ const getLocalPrediction = (rawSymptoms) => {
   };
 };
 
-router.post("/symptoms", async (req, res) => {
+const handleSymptoms = async (req, res) => {
   if (process.env.AI_SERVICE_URL) {
     try {
       const response = await fetch(
@@ -58,12 +58,11 @@ router.post("/symptoms", async (req, res) => {
       if (response.ok && payload.prediction) {
         return res.json({ success: true, data: payload.prediction });
       }
-    } catch (err) {
-      //
-    }
+    } catch (err) {}
   }
 
-  const localResult = getLocalPrediction(req.body?.data);
+  const rawSymptoms = req.body?.data || req.body?.symptoms;
+  const localResult = getLocalPrediction(rawSymptoms);
   if (localResult) {
     return res.json({ success: true, data: localResult });
   }
@@ -72,6 +71,10 @@ router.post("/symptoms", async (req, res) => {
     success: false,
     message: "The symptom screening service is unavailable. Please try again later.",
   });
-});
+};
+
+router.post("/symptoms", handleSymptoms);
+router.post("/predict-symptoms", handleSymptoms);
+router.post("/health-predict/predict-symptoms", handleSymptoms);
 
 export default router;

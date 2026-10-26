@@ -1,7 +1,5 @@
 const convertTime = (time) => {
-  // Check if the time string contains the colon character
   if (!time.includes(":")) {
-    // If the colon is not present, return an error message or handle it as per your requirement
     return "Invalid time format";
   }
   const timeParts = time.split(":");
@@ -21,7 +19,7 @@ const convertTime = (time) => {
 
   return (
     hours.toString().padStart(2, "0") +
-    ":" + // Ensure hours are always 2 digits
+    ":" +
     minutes.toString().padStart(2, "0") +
     " " +
     meridiem

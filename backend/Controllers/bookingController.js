@@ -2,12 +2,14 @@ import User from "../models/UserSchema.js";
 import Doctor from "../models/DoctorSchema.js";
 import Booking from "../models/BookingSchema.js";
 import Stripe from "stripe";
+import { connectDB } from "../db.js";
 
 const clientSiteUrl = () =>
   (process.env.CLIENT_SITE_URL || "http://localhost:5173").replace(/\/$/, "");
 
 export const getCheckoutSession = async (req, res) => {
   try {
+    await connectDB();
     const [doctor, user] = await Promise.all([
       Doctor.findById(req.params.doctorId),
       User.findById(req.userId),
@@ -28,7 +30,6 @@ export const getCheckoutSession = async (req, res) => {
 
     const clientUrl = clientSiteUrl();
     if (!process.env.STRIPE_SECRET_KEY) {
-      console.warn("Stripe is not configured; creating a clearly labeled demo booking.");
       const sessionId = `demo_${Date.now()}_${doctor.id}`;
       await Booking.create({
         doctor: doctor._id,
@@ -83,7 +84,6 @@ export const getCheckoutSession = async (req, res) => {
     });
     return res.status(200).json({ success: true, demo: false, session });
   } catch (error) {
-    console.error("Could not create checkout session:", error.message);
     return res.status(500).json({
       success: false,
       message: "Unable to create checkout. Please try again.",
@@ -94,6 +94,7 @@ export const getCheckoutSession = async (req, res) => {
 export const verifyCheckoutSession = async (req, res) => {
   const { sessionId } = req.params;
   try {
+    await connectDB();
     const booking = await Booking.findOne({
       session: sessionId,
       user: req.userId,
@@ -135,7 +136,6 @@ export const verifyCheckoutSession = async (req, res) => {
         : "Payment is not marked as complete by the payment provider.",
     });
   } catch (error) {
-    console.error("Could not verify checkout session:", error.message);
     return res.status(500).json({
       success: false,
       message: "Unable to verify payment status.",

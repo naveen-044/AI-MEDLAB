@@ -1,7 +1,6 @@
 import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import mongoose from "mongoose";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -62,14 +61,18 @@ app.use(cookieParser());
 app.use((req, res, next) => {
   const original = req.headers["x-matched-path"] || req.headers["x-vercel-matched-path"];
   if (original && !original.endsWith(".js") && original !== req.url) {
-    req.url = original;
+    const qIndex = req.url.indexOf("?");
+    const query = qIndex !== -1 ? req.url.slice(qIndex) : "";
+    req.url = original + query;
   }
   next();
 });
 
 app.use(async (req, res, next) => {
   if (process.env.MONGO_URL) {
-    await connectDB();
+    try {
+      await connectDB();
+    } catch (e) {}
   }
   next();
 });
@@ -79,6 +82,10 @@ app.get("/", (req, res) => {
 });
 
 app.get("/api", (req, res) => {
+  res.send("Api is working");
+});
+
+app.get("/api/index", (req, res) => {
   res.send("Api is working");
 });
 
@@ -117,7 +124,6 @@ mountRoutes("");
 
 app.use((error, req, res, next) => {
   if (res.headersSent) return next(error);
-  console.error("Request failed:", error.message);
   const isUploadError = error.name === "MulterError";
   return res.status(isUploadError ? 413 : 400).json({
     success: false,
@@ -130,17 +136,15 @@ if (process.env.NODE_ENV !== "test" && !process.env.VERCEL) {
     app.listen(port, () => {
       console.log("Server is running on port " + port);
     });
-  }).catch((error) => {
-    console.error("Failed to connect to DB", error);
-  });
+  }).catch(() => {});
 }
 
 process.on("uncaughtException", (err) => {
-  console.error("Uncaught Exception:", err);
+  console.error("Uncaught Exception:", err.message);
 });
 
-process.on("unhandledRejection", (reason, promise) => {
-  console.error("Unhandled Rejection at:", promise, "reason:", reason);
+process.on("unhandledRejection", (reason) => {
+  console.error("Unhandled Rejection:", reason);
 });
 
 export default app;
