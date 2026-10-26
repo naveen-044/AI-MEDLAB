@@ -15,6 +15,9 @@ import adminRoute from "./Routes/admin.js";
 import contactRoute from "./Routes/contact.js";
 import forgotPassRoute from "./Routes/forgot-password.js";
 import healthRoute from "./Routes/healthPredict.js";
+import { connectDB } from "./db.js";
+
+export { connectDB };
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -52,24 +55,6 @@ app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
-
-let isDbConnected = false;
-export const connectDB = async () => {
-  if (isDbConnected || mongoose.connection.readyState >= 1) {
-    return;
-  }
-  const mongoUri = process.env.MONGO_URL;
-  if (!mongoUri) {
-    return;
-  }
-  try {
-    await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 4000 });
-    isDbConnected = true;
-    console.log("Mongoose connected");
-  } catch (error) {
-    console.error("Mongoose connection failed:", error.message);
-  }
-};
 
 app.use(async (req, res, next) => {
   if (process.env.MONGO_URL) {

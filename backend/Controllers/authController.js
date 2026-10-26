@@ -3,6 +3,7 @@ import Doctor from "../models/DoctorSchema.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import mongoose from "mongoose";
+import { connectDB } from "../db.js";
 
 const generateToken = (user) => {
   return jwt.sign(
@@ -21,11 +22,20 @@ export const register = async (req, res) => {
     return res.status(400).json({ success: false, message: "Name, email, and password are required" });
   }
 
-  if (mongoose.connection.readyState !== 1 && !process.env.MONGO_URL) {
-    return res.status(503).json({
-      success: false,
-      message: "Database not connected. Please set MONGO_URL in Vercel Environment Variables.",
-    });
+  if (mongoose.connection.readyState !== 1) {
+    if (!process.env.MONGO_URL) {
+      return res.status(503).json({
+        success: false,
+        message: "Database not configured. Please set MONGO_URL in Vercel Environment Variables.",
+      });
+    }
+    await connectDB().catch(() => {});
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        success: false,
+        message: "Unable to connect to MongoDB. In MongoDB Atlas, verify Network Access allows 0.0.0.0/0.",
+      });
+    }
   }
 
   try {
@@ -84,11 +94,20 @@ export const login = async (req, res) => {
     return res.status(400).json({ status: false, message: "Email and password are required" });
   }
 
-  if (mongoose.connection.readyState !== 1 && !process.env.MONGO_URL) {
-    return res.status(503).json({
-      status: false,
-      message: "Database not connected. Please set MONGO_URL in Vercel Environment Variables.",
-    });
+  if (mongoose.connection.readyState !== 1) {
+    if (!process.env.MONGO_URL) {
+      return res.status(503).json({
+        status: false,
+        message: "Database not configured. Please set MONGO_URL in Vercel Environment Variables.",
+      });
+    }
+    await connectDB().catch(() => {});
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        status: false,
+        message: "Unable to connect to MongoDB. In MongoDB Atlas, verify Network Access allows 0.0.0.0/0.",
+      });
+    }
   }
 
   try {
