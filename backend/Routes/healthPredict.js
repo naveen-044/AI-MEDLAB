@@ -1,24 +1,9 @@
 import express from "express";
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
+import knowledgeBase from "../symptom_knowledge_base.js";
 
 const router = express.Router({ mergeParams: true });
 const getAiServiceUrl = () =>
   process.env.AI_SERVICE_URL || "http://127.0.0.1:8001";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const kbPath = path.join(__dirname, "..", "symptom_knowledge_base.json");
-let knowledgeBase = null;
-
-try {
-  if (fs.existsSync(kbPath)) {
-    knowledgeBase = JSON.parse(fs.readFileSync(kbPath, "utf-8"));
-  }
-} catch (e) {
-  knowledgeBase = null;
-}
 
 const getLocalPrediction = (rawSymptoms) => {
   if (!knowledgeBase) return null;
