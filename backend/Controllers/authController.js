@@ -23,14 +23,9 @@ export const register = async (req, res) => {
   }
 
   if (mongoose.connection.readyState !== 1) {
-    if (!process.env.MONGO_URL) {
-      return res.status(503).json({
-        success: false,
-        message: "Database not configured. Please set MONGO_URL in Vercel Environment Variables.",
-      });
-    }
-    await connectDB().catch(() => {});
-    if (mongoose.connection.readyState !== 1) {
+    try {
+      await connectDB();
+    } catch (e) {
       return res.status(503).json({
         success: false,
         message: "Unable to connect to MongoDB. In MongoDB Atlas, verify Network Access allows 0.0.0.0/0.",
@@ -95,14 +90,9 @@ export const login = async (req, res) => {
   }
 
   if (mongoose.connection.readyState !== 1) {
-    if (!process.env.MONGO_URL) {
-      return res.status(503).json({
-        status: false,
-        message: "Database not configured. Please set MONGO_URL in Vercel Environment Variables.",
-      });
-    }
-    await connectDB().catch(() => {});
-    if (mongoose.connection.readyState !== 1) {
+    try {
+      await connectDB();
+    } catch (e) {
       return res.status(503).json({
         status: false,
         message: "Unable to connect to MongoDB. In MongoDB Atlas, verify Network Access allows 0.0.0.0/0.",
