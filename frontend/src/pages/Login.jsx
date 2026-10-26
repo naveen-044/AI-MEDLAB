@@ -31,9 +31,9 @@ const Login = () => {
         },
         body: JSON.stringify(formData),
       });
-      const result = await res.json();
+      const result = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new Error(result.message);
+        throw new Error(result.message || "Failed to login");
       }
 
       dispatch({
@@ -46,10 +46,10 @@ const Login = () => {
       });
 
       setLoading(false);
-      toast.success(result.message);
+      toast.success(result.message || "Successfully logged in");
       navigate("/home");
     } catch (err) {
-      toast.error(err.message);
+      toast.error(err.message || "Failed to login");
       setLoading(false);
     }
   };

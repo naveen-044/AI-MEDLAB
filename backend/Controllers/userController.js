@@ -1,7 +1,6 @@
 import User from "../models/UserSchema.js";
 import Booking from "../models/BookingSchema.js";
 import Doctor from "../models/DoctorSchema.js";
-import mongoose from "mongoose";
 
 export const updateUser = async (req, res) => {
   const id = req.params.id;
@@ -23,11 +22,10 @@ export const updateUser = async (req, res) => {
       data: updateUser,
     });
   } catch (error) {
-    console.error("Error updating user:", error);
     res.status(500).json({
       success: false,
       message: "Failed to update",
-      error: error.message, // Include error message in the response
+      error: error.message,
     });
   }
 };
@@ -35,11 +33,11 @@ export const updateUser = async (req, res) => {
 export const deleteUser = async (req, res) => {
   const id = req.params.id;
   try {
-    await User.findById(id);
+    await User.findByIdAndDelete(id);
     res.status(200).json({
       success: true,
       message: "Successfully deleted",
-      data: deleteUser,
+      data: null,
     });
   } catch (error) {
     res.status(500).json({
@@ -67,7 +65,6 @@ export const getSingleUser = async (req, res) => {
 };
 
 export const getAllUsers = async (req, res) => {
-  const id = req.params.id;
   try {
     const users = await User.find({}).select("-password");
     res.status(200).json({
@@ -112,11 +109,10 @@ export const getUserProfile = async (req, res) => {
 
 export const getMyAppointments = async (req, res) => {
   try {
-    // step - 1 : retrieve appointments from booking specific user
     const bookings = await Booking.find({ user: req.userId });
-    // step - 2 : extract doctor ids from appointments bookings
-    const doctorIds = bookings.map((el) => el.doctor.id);
-    // step - 3 : retrieve doctors using doctor ids
+    const doctorIds = bookings
+      .map((el) => el.doctor?._id || el.doctor?.id || el.doctor)
+      .filter(Boolean);
     const doctors = await Doctor.find({ _id: { $in: doctorIds } }).select(
       "-password"
     );

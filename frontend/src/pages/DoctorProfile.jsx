@@ -38,7 +38,7 @@ const DoctorProfile = () => {
         const response = await fetch(`${BASE_URL}/doctors/${id}`, {
           signal: controller.signal,
         });
-        const result = await response.json();
+        const result = await response.json().catch(() => ({}));
         if (!response.ok || !result.data) {
           throw new Error(result.message || "Doctor profile could not be found.");
         }

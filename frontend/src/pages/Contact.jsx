@@ -27,13 +27,14 @@ const Contact = () => {
         },
         body: JSON.stringify(formData),
       });
+      const result = await response.json().catch(() => ({}));
       if (response.ok) {
-        toast.success("Email Send Successfully");
+        toast.success(result.message || "Email sent successfully");
       } else {
-        toast.error("Try Again...!");
+        toast.error(result.message || "Failed to send email");
       }
     } catch (error) {
-      toast.error("Error submitting form:", error);
+      toast.error("Error submitting form");
     }
   };
 
@@ -82,7 +83,6 @@ const Contact = () => {
             </label>
             <textarea
               rows={6}
-              type="text"
               name="message"
               value={formData.message}
               onChange={handleChange}

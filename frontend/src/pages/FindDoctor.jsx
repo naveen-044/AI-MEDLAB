@@ -22,7 +22,7 @@ const FindDoctor = () => {
         const response = await fetch(`${BASE_URL}/doctors`, {
           signal: controller.signal,
         });
-        const result = await response.json();
+        const result = await response.json().catch(() => ({}));
         if (!response.ok) {
           throw new Error(result.message || "Unable to load doctor profiles.");
         }

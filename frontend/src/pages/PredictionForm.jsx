@@ -1,5 +1,4 @@
-import { useRef, useState } from "react";
-import { useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { FaArrowLeft, FaCloudArrowUp, FaShieldHeart } from "react-icons/fa6";
 import { toast } from "react-toastify";
@@ -83,6 +82,7 @@ const PredictionForm = () => {
       if (isImageTool) {
         if (!image) {
           setErrorMessage("Choose an image before starting the screening.");
+          setLoading(false);
           return;
         }
         const formData = new FormData();
@@ -90,7 +90,10 @@ const PredictionForm = () => {
         response = await fetch(endpoint, { method: "POST", body: formData });
       } else {
         const data = Object.fromEntries(
-          fields.map(({ name }) => [name, Number(values[name])]),
+          fields.map(({ name }) => {
+            const val = Number(values[name]);
+            return [name, Number.isFinite(val) ? val : 0];
+          }),
         );
         response = await fetch(endpoint, {
           method: "POST",
