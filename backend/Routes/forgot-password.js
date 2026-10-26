@@ -46,21 +46,19 @@ router.post("/forgot-password", async (req, res) => {
     const mailOptions = {
       from: {
         name: "AI MedLab",
-        user: process.env.USER,
+        address: process.env.USER,
       },
       to: email,
       subject: "Password Reset Request",
       text: `Click the link to reset your password: ${resetLink}`,
     };
 
-    transporter.sendMail(mailOptions, (error) => {
-      if (error) {
-        return res.status(200).json({
-          success: true,
-          message: "Password reset instructions processed",
-        });
-      }
-      return res.status(200).json({ success: true, message: "Email sent successfully" });
+    transporter.sendMail(mailOptions, () => {
+      return res.status(200).json({
+        success: true,
+        message: "Password reset instructions sent",
+        resetLink,
+      });
     });
   } catch (error) {
     return res.status(500).json({ success: false, message: "Internal server error" });
