@@ -4,6 +4,10 @@ import vitePluginRewriteAll from "vite-plugin-rewrite-all";
 
 export default defineConfig({
   plugins: [react(), vitePluginRewriteAll()],
+  build: {
+    outDir: "../dist",
+    emptyOutDir: true,
+  },
   resolve: {
     alias: {
       "@": "/src",
