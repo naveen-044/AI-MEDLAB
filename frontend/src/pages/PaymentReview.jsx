@@ -20,7 +20,7 @@ const PaymentReview = () => {
         const response = await fetch(`${BASE_URL}/doctors/${doctorId}`, {
           signal: controller.signal,
         });
-        const result = await response.json();
+        const result = await response.json().catch(() => ({}));
         if (!response.ok || !result.data) {
           throw new Error(result.message || "Doctor details could not be loaded.");
         }
@@ -52,7 +52,7 @@ const PaymentReview = () => {
           headers: { Authorization: `Bearer ${token}` },
         },
       );
-      const result = await response.json();
+      const result = await response.json().catch(() => ({}));
       if (!response.ok || !result.session?.url) {
         throw new Error(result.message || "Checkout could not be started.");
       }

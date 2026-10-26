@@ -21,11 +21,10 @@ export const updateDoctor = async (req, res) => {
       data: updateDoctor,
     });
   } catch (error) {
-    console.error("Error updating Doctor:", error);
     res.status(500).json({
       success: false,
       message: "Failed to update doctor",
-      error: error.message, // Include error message in the response
+      error: error.message,
     });
   }
 };
@@ -33,11 +32,11 @@ export const updateDoctor = async (req, res) => {
 export const deleteDoctor = async (req, res) => {
   const id = req.params.id;
   try {
-    await Doctor.findById(id);
+    await Doctor.findByIdAndDelete(id);
     res.status(200).json({
       success: true,
       message: "Successfully deleted",
-      data: deleteDoctor,
+      data: null,
     });
   } catch (error) {
     res.status(500).json({
@@ -67,7 +66,6 @@ export const getSingleDoctor = async (req, res) => {
 };
 
 export const getAllDoctors = async (req, res) => {
-  const id = req.params.id;
   try {
     const { query } = req.query;
     let doctors;
@@ -101,11 +99,9 @@ export const getAllDoctors = async (req, res) => {
 
 export const getDoctorProfile = async (req, res) => {
   const doctorId = req.doctorId;
-  // console.log("Doctor ID:", doctorId);
 
   try {
     const doctor = await Doctor.findById(doctorId);
-    // console.log("Retrieved doctor profile:", doctor);
 
     if (!doctor) {
       return res
@@ -122,7 +118,6 @@ export const getDoctorProfile = async (req, res) => {
       data: { ...rest, appointments },
     });
   } catch (error) {
-    // console.error("Error fetching doctor profile:", error);
     res.status(500).json({
       success: false,
       message: "Someting went wrong, cannot get this",

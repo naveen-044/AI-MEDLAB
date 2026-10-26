@@ -10,14 +10,27 @@ const parseJSON = (value) => {
 };
 
 const getUserFromLocalStorage = () => {
+  if (typeof window === "undefined") return null;
   const user = localStorage.getItem("user");
-  return user ? parseJSON(user) : null;
+  return user && user !== "null" && user !== "undefined" ? parseJSON(user) : null;
+};
+
+const getTokenFromLocalStorage = () => {
+  if (typeof window === "undefined") return null;
+  const token = localStorage.getItem("token");
+  return token && token !== "null" && token !== "undefined" ? token : null;
+};
+
+const getRoleFromLocalStorage = () => {
+  if (typeof window === "undefined") return null;
+  const role = localStorage.getItem("role");
+  return role && role !== "null" && role !== "undefined" ? role : null;
 };
 
 const initialState = {
   user: getUserFromLocalStorage(),
-  role: localStorage.getItem("role") || null,
-  token: localStorage.getItem("token") || null,
+  role: getRoleFromLocalStorage(),
+  token: getTokenFromLocalStorage(),
 };
 
 export const authContext = createContext(initialState);
@@ -52,9 +65,23 @@ export const AuthContextProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
   useEffect(() => {
-    localStorage.setItem("user", JSON.stringify(state.user));
-    localStorage.setItem("token", state.token);
-    localStorage.setItem("role", state.role);
+    if (state.user) {
+      localStorage.setItem("user", JSON.stringify(state.user));
+    } else {
+      localStorage.removeItem("user");
+    }
+
+    if (state.token && state.token !== "null" && state.token !== "undefined") {
+      localStorage.setItem("token", state.token);
+    } else {
+      localStorage.removeItem("token");
+    }
+
+    if (state.role && state.role !== "null" && state.role !== "undefined") {
+      localStorage.setItem("role", state.role);
+    } else {
+      localStorage.removeItem("role");
+    }
   }, [state]);
 
   return (

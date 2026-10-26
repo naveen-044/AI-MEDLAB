@@ -4,7 +4,7 @@ import cors from "cors";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import path from "path";
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from "url";
 import authRoute from "./Routes/auth.js";
 import userRoute from "./Routes/user.js";
 import doctorRoute from "./Routes/doctor.js";
@@ -19,39 +19,66 @@ import healthRoute from "./Routes/healthPredict.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-dotenv.config({ path: path.join(__dirname, '.env') });
+dotenv.config({ path: path.join(__dirname, ".env") });
 
-process.env.MONGO_URL = process.env.MONGO_URL || '';
-process.env.JWT_SECRET_KEY = process.env.JWT_SECRET_KEY || 'your_secret_key_here';
+process.env.MONGO_URL = process.env.MONGO_URL || "";
+process.env.JWT_SECRET_KEY = process.env.JWT_SECRET_KEY || "your_secret_key_here";
 
 const app = express();
 const port = process.env.PORT || 8000;
 
-const allowedOrigins = process.env.CORS_ORIGIN
-  ? process.env.CORS_ORIGIN.split(",").map((origin) => origin.trim())
-  : ["http://ai-medlab-theta.vercel.app", "https://ai-medlab-theta.vercel.app"];
-const corsOptions = { origin: allowedOrigins };
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    if (!process.env.CORS_ORIGIN) return callback(null, true);
+    const origins = process.env.CORS_ORIGIN.split(",").map((o) => o.trim());
+    if (
+      origins.includes("*") ||
+      origins.includes(origin) ||
+      origin.endsWith(".vercel.app") ||
+      origin.includes("localhost") ||
+      origin.includes("127.0.0.1")
+    ) {
+      return callback(null, true);
+    }
+    return callback(null, true);
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+};
 
-app.get("/", (req, res) => {
-  res.send("Api is working");
-});
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
+app.use(express.json());
+app.use(cookieParser());
 
-//database connection
-mongoose.set("strictQuery", false);
-const connectDB = async () => {
+let isDbConnected = false;
+export const connectDB = async () => {
+  if (isDbConnected || mongoose.connection.readyState >= 1) {
+    return;
+  }
   try {
-    await mongoose.connect(process.env.MONGO_URL || 'mongodb://localhost:27017/aimedlab');
+    await mongoose.connect(process.env.MONGO_URL || "mongodb://localhost:27017/aimedlab");
+    isDbConnected = true;
     console.log("Mongoose connected");
   } catch (error) {
     console.log("Mongoose connection failed", error.message);
   }
 };
 
-//middleware
-app.use(express.json());
-app.use(cookieParser());
-app.use(cors(corsOptions));
-app.use("/api/v1/auth", authRoute); //domain/api/v1/auth/register or any other request
+app.use(async (req, res, next) => {
+  if (process.env.MONGO_URL) {
+    await connectDB();
+  }
+  next();
+});
+
+app.get("/", (req, res) => {
+  res.send("Api is working");
+});
+
+app.use("/api/v1/auth", authRoute);
 app.use("/api/v1/users", userRoute);
 app.use("/api/v1/doctors", doctorRoute);
 app.use("/api/v1/reviews", reviewRoute);
@@ -61,6 +88,7 @@ app.use("/api/v1/admin", adminRoute);
 app.use("/api/v1/", contactRoute);
 app.use("/api/v1/", forgotPassRoute);
 app.use("/api/v1/", healthRoute);
+
 app.get("/api/v1/ai-health", async (req, res) => {
   try {
     const response = await fetch(
@@ -76,6 +104,7 @@ app.get("/api/v1/ai-health", async (req, res) => {
     });
   }
 });
+
 app.use((error, req, res, next) => {
   if (res.headersSent) return next(error);
   console.error("Request failed:", error.message);
@@ -86,20 +115,22 @@ app.use((error, req, res, next) => {
   });
 });
 
-connectDB().then(() => {
-  app.listen(port, () => {
-    console.log("Server is running on port " + port);
+if (process.env.NODE_ENV !== "test" && !process.env.VERCEL) {
+  connectDB().then(() => {
+    app.listen(port, () => {
+      console.log("Server is running on port " + port);
+    });
+  }).catch((error) => {
+    console.log("Failed to connect to DB", error);
   });
-}).catch((error) => {
-  console.log("Failed to connect to DB", error);
+}
+
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught Exception:", err);
 });
 
-process.on('uncaughtException', (err) => {
-  console.error('Uncaught Exception:', err);
-  process.exit(1);
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Rejection at:", promise, "reason:", reason);
 });
 
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-  process.exit(1);
-});
+export default app;

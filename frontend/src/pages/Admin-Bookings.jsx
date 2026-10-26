@@ -16,15 +16,17 @@ const AdminBookings = () => {
     error,
   } = useFetchData(`${BASE_URL}/admin/bookings`);
 
+  const bookingList = Array.isArray(bookings) ? bookings : [];
+
   return (
     <>
       {loading && <Loading />}
       {error && <Error />}
       {!loading && !error && (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {bookings.map((booking, index) => (
+          {bookingList.map((booking, index) => (
             <div
-              key={index}
+              key={booking._id || index}
               className="border-2 border-gray-500 rounded-lg px-4 py-2 m-4 relative hover:shadow-xl"
             >
               <div className="flex justify-start items-center gap-x-2">

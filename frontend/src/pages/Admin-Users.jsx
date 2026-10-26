@@ -1,5 +1,4 @@
-import { useEffect } from "react";
-import { BASE_URL, token } from "../config.js";
+import { BASE_URL } from "../config.js";
 import useFetchData from "../hooks/useFetchData.jsx";
 import defaultImg from "../assets/images/default.avif";
 import { BiEditAlt } from "react-icons/bi";
@@ -19,27 +18,7 @@ const AdminUsers = () => {
     error,
   } = useFetchData(`${BASE_URL}/admin/users`);
 
-  console.log("call users");
-
-  const getAllUsersData = async () => {
-    try {
-      const response = await fetch(`${BASE_URL}/admin/users`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const data = await response.json();
-      console.log("Users data:", data);
-      // setUsers(data);
-    } catch (error) {
-      console.log("Error fetching users:", error);
-    }
-  };
-
-  useEffect(() => {
-    getAllUsersData();
-  }, []);
+  const userList = Array.isArray(users) ? users : [];
 
   return (
     <>
@@ -47,9 +26,9 @@ const AdminUsers = () => {
       {error && <Error />}
       {!loading && !error && (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {users.map((user, index) => (
+          {userList.map((user, index) => (
             <div
-              key={index}
+              key={user._id || index}
               className="border-2 border-gray-500 rounded-lg px-4 py-2 m-4 relative hover:shadow-xl"
             >
               <div className="flex justify-between mb-3">

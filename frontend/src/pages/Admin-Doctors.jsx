@@ -1,6 +1,5 @@
-import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { BASE_URL, token } from "../config.js";
+import { BASE_URL, getToken } from "../config.js";
 import useFetchData from "../hooks/useFetchData.jsx";
 import defaultImg from "../assets/images/default.avif";
 import { BiEditAlt } from "react-icons/bi";
@@ -21,48 +20,27 @@ const AdminDoctors = () => {
     error,
   } = useFetchData(`${BASE_URL}/admin/doctors`);
 
-  console.log("call users");
-
-  const getAllUsersData = async () => {
-    try {
-      const response = await fetch(`${BASE_URL}/admin/doctors`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const data = await response.json();
-      console.log("Users data:", data);
-    } catch (error) {
-      console.log("Error fetching users:", error);
-    }
-  };
-
   const updateApprovalStatus = async (id, newStatus) => {
     try {
+      const token = getToken();
       const response = await fetch(`${BASE_URL}/admin/doctors/${id}`, {
         method: "PUT",
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: token ? `Bearer ${token}` : "",
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ isApproved: newStatus }),
       });
-      const data = await response.json();
-      console.log("Updated user:", data);
-
       if (response.ok) {
         navigate(`/admin/doctors`);
-        getAllUsersData();
+        window.location.reload();
       }
-    } catch (error) {
-      console.log("Error updating approval status:", error);
+    } catch (err) {
+      console.error(err);
     }
   };
 
-  useEffect(() => {
-    getAllUsersData();
-  }, []);
+  const doctorList = Array.isArray(doctors) ? doctors : [];
 
   return (
     <>
@@ -70,9 +48,9 @@ const AdminDoctors = () => {
       {error && <Error />}
       {!loading && !error && (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {doctors.map((user, index) => (
+          {doctorList.map((user, index) => (
             <div
-              key={index}
+              key={user._id || index}
               className="border-2 border-gray-500 rounded-lg px-4 py-2 m-4 relative hover:shadow-xl"
             >
               <div className="mb-3 flex justify-between">

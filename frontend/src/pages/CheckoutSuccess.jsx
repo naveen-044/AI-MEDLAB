@@ -38,7 +38,7 @@ const CheckoutSuccess = () => {
             signal: controller.signal,
           },
         );
-        const result = await response.json();
+        const result = await response.json().catch(() => ({}));
         if (!response.ok) {
           throw new Error(result.message || "Payment status could not be verified.");
         }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-// import { token } from "../config.js";
+import { getToken } from "../config.js";
 
 const useFetchData = (url) => {
   const [data, setData] = useState([]);
@@ -7,33 +7,40 @@ const useFetchData = (url) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchData = async () => {
       setLoading(true);
+      setError(null);
       try {
-        const token = localStorage.getItem("token");
+        const token = getToken();
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
         const res = await fetch(url, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers,
+          signal: controller.signal,
         });
-        const result = await res.json();
+        const result = await res.json().catch(() => ({}));
 
         if (!res.ok) {
-          if (res.status === 401) {
-            localStorage.removeItem("token");
-            localStorage.removeItem("user");
-            localStorage.removeItem("role");
-            window.location.href = "/login";
-          }
-          throw new Error(result.message);
+          throw new Error(result.message || "Failed to fetch data");
         }
-        setData(result.data);
-        setLoading(false);
+        setData(result.data || []);
       } catch (err) {
-        setLoading(false);
-        setError(err.message);
+        if (err.name !== "AbortError") {
+          setError(err.message || "An unexpected error occurred");
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
+
     fetchData();
+
+    return () => controller.abort();
   }, [url]);
+
   return { data, loading, error };
 };
 

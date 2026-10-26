@@ -1,26 +1,26 @@
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import { BASE_URL, token } from "../config";
+import { BASE_URL, getToken } from "../config";
 
 const DeleteDoctor = () => {
   const navigate = useNavigate();
   const { id } = useParams();
 
   const handleDelete = () => {
+    const token = getToken();
     axios
       .delete(`${BASE_URL}/admin/doctors/delete/${id}`, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: token ? `Bearer ${token}` : "",
         },
       })
       .then(() => {
-        toast("Doctor Deleted successfully");
+        toast.success("Doctor deleted successfully");
         navigate("/admin/doctors");
       })
-      .catch((err) => {
-        toast("Error", { variant: "error" });
-        console.log(err);
+      .catch(() => {
+        toast.error("Failed to delete doctor");
       });
   };
 

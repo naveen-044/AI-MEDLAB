@@ -1,13 +1,11 @@
-import { useState, useContext } from "react";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { BASE_URL } from "../config";
 import { toast } from "react-toastify";
-import { authContext } from "../context/AuthContext.jsx";
 
 const ResetPassword = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { dispatch } = useContext(authContext);
   const { id, token } = useParams();
 
   const [formData, setFormData] = useState({
@@ -30,25 +28,16 @@ const ResetPassword = () => {
         },
         body: JSON.stringify(formData),
       });
-      const result = await res.json();
+      const result = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new Error(result.message);
+        throw new Error(result.message || "Failed to reset password");
       }
 
-      dispatch({
-        type: "LOGIN_SUCCESS",
-        payload: {
-          user: result.data,
-          token: result.token,
-          role: result.role,
-        },
-      });
-
       setLoading(false);
-      toast.success(result.message);
+      toast.success(result.message || "Password updated successfully");
       navigate("/login");
     } catch (err) {
-      toast.error(err.message);
+      toast.error(err.message || "Failed to reset password");
       setLoading(false);
     }
   };

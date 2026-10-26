@@ -112,11 +112,10 @@ Make sure MongoDB and the FastAPI service are running before exercising the full
 
 ## Production deployment notes
 
-<<<<<<< HEAD
-This project is licensed under the [MIT License](https://github.com/abdul-wahab619/AI-MedLab/blob/main/LICENSE).
-=======
 Deploy the frontend, Express API, MongoDB, and FastAPI model service as separate services. Set `AI_SERVICE_URL` to the private FastAPI URL reachable from Express; do not expose the model service publicly unless protected by an appropriate network/API policy. Set `CLIENT_SITE_URL` and `CORS_ORIGIN` to the deployed frontend origin, configure `MONGO_URL`, a strong `JWT_SECRET_KEY`, and Stripe keys via the hosting provider's secret manager. Use HTTPS and run the same lint/build/model tests before release. Do not commit `.env` files or model service credentials.
 
 Set the frontend build variable `VITE_API_URL` to the Express API base URL, including `/api/v1` (for example `https://api.example.com/api/v1`), before building the production frontend.
 
-> > > > > > > 9b4d167 (Update AI MedLab working project)
+## License
+
+This project is licensed under the [MIT License](https://github.com/abdul-wahab619/AI-MedLab/blob/main/LICENSE).
