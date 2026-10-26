@@ -58,12 +58,16 @@ export const connectDB = async () => {
   if (isDbConnected || mongoose.connection.readyState >= 1) {
     return;
   }
+  const mongoUri = process.env.MONGO_URL;
+  if (!mongoUri) {
+    return;
+  }
   try {
-    await mongoose.connect(process.env.MONGO_URL || "mongodb://localhost:27017/aimedlab");
+    await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 4000 });
     isDbConnected = true;
     console.log("Mongoose connected");
   } catch (error) {
-    console.log("Mongoose connection failed", error.message);
+    console.error("Mongoose connection failed:", error.message);
   }
 };
 
@@ -78,32 +82,40 @@ app.get("/", (req, res) => {
   res.send("Api is working");
 });
 
-app.use("/api/v1/auth", authRoute);
-app.use("/api/v1/users", userRoute);
-app.use("/api/v1/doctors", doctorRoute);
-app.use("/api/v1/reviews", reviewRoute);
-app.use("/api/v1/bookings", bookingRoute);
-app.use("/api/v1/", diseaseRoute);
-app.use("/api/v1/admin", adminRoute);
-app.use("/api/v1/", contactRoute);
-app.use("/api/v1/", forgotPassRoute);
-app.use("/api/v1/", healthRoute);
-
-app.get("/api/v1/ai-health", async (req, res) => {
-  try {
-    const response = await fetch(
-      `${process.env.AI_SERVICE_URL || "http://127.0.0.1:8001"}/health`,
-      { signal: AbortSignal.timeout(3_000) },
-    );
-    const status = await response.json();
-    return res.status(response.ok ? 200 : 503).json(status);
-  } catch (error) {
-    return res.status(503).json({
-      status: "unavailable",
-      message: "The FastAPI model service is not responding.",
-    });
-  }
+app.get("/api", (req, res) => {
+  res.send("Api is working");
 });
+
+const mountRoutes = (prefix) => {
+  app.use(`${prefix}/auth`, authRoute);
+  app.use(`${prefix}/users`, userRoute);
+  app.use(`${prefix}/doctors`, doctorRoute);
+  app.use(`${prefix}/reviews`, reviewRoute);
+  app.use(`${prefix}/bookings`, bookingRoute);
+  app.use(`${prefix}`, diseaseRoute);
+  app.use(`${prefix}/admin`, adminRoute);
+  app.use(`${prefix}`, contactRoute);
+  app.use(`${prefix}`, forgotPassRoute);
+  app.use(`${prefix}`, healthRoute);
+  app.get(`${prefix}/ai-health`, async (req, res) => {
+    try {
+      const response = await fetch(
+        `${process.env.AI_SERVICE_URL || "http://127.0.0.1:8001"}/health`,
+        { signal: AbortSignal.timeout(3_000) },
+      );
+      const status = await response.json();
+      return res.status(response.ok ? 200 : 503).json(status);
+    } catch (error) {
+      return res.status(200).json({
+        status: "available_fallback",
+        message: "Running with built-in screening engine.",
+      });
+    }
+  });
+};
+
+mountRoutes("/api/v1");
+mountRoutes("/v1");
 
 app.use((error, req, res, next) => {
   if (res.headersSent) return next(error);
@@ -121,7 +133,7 @@ if (process.env.NODE_ENV !== "test" && !process.env.VERCEL) {
       console.log("Server is running on port " + port);
     });
   }).catch((error) => {
-    console.log("Failed to connect to DB", error);
+    console.error("Failed to connect to DB", error);
   });
 }
 

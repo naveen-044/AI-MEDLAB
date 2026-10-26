@@ -2,6 +2,7 @@ import User from "../models/UserSchema.js";
 import Doctor from "../models/DoctorSchema.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
+import mongoose from "mongoose";
 
 const generateToken = (user) => {
   return jwt.sign(
@@ -16,6 +17,17 @@ const generateToken = (user) => {
 export const register = async (req, res) => {
   const { email, password, name, role, photo, gender } = req.body;
 
+  if (!email || !password || !name) {
+    return res.status(400).json({ success: false, message: "Name, email, and password are required" });
+  }
+
+  if (mongoose.connection.readyState !== 1 && !process.env.MONGO_URL) {
+    return res.status(503).json({
+      success: false,
+      message: "Database not connected. Please set MONGO_URL in Vercel Environment Variables.",
+    });
+  }
+
   try {
     let user = null;
 
@@ -25,12 +37,10 @@ export const register = async (req, res) => {
       user = await Doctor.findOne({ email });
     }
 
-    //check if user exist
     if (user) {
-      return res.status(400).json({ message: "User already exist" });
+      return res.status(400).json({ success: false, message: "User already exists" });
     }
 
-    //hash password
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(password, salt);
 
@@ -57,25 +67,36 @@ export const register = async (req, res) => {
     }
 
     await user.save();
-    res
+    return res
       .status(200)
-      .json({ success: true, message: "User Successfully created" });
+      .json({ success: true, message: "User successfully created" });
   } catch (error) {
-    res
+    return res
       .status(500)
-      .json({ success: false, message: "Internal server error, Try again" });
+      .json({ success: false, message: error.message || "Internal server error, please try again" });
   }
 };
 
 export const login = async (req, res) => {
   const { email, password } = req.body;
 
+  if (!email || !password) {
+    return res.status(400).json({ status: false, message: "Email and password are required" });
+  }
+
+  if (mongoose.connection.readyState !== 1 && !process.env.MONGO_URL) {
+    return res.status(503).json({
+      status: false,
+      message: "Database not connected. Please set MONGO_URL in Vercel Environment Variables.",
+    });
+  }
+
   try {
     let user = null;
 
     const patient = await User.findOne({ email });
     const doctor = await Doctor.findOne({ email });
-    const admin = await User.findOne({ email, role: "admin" }); // Add admin check
+    const admin = await User.findOne({ email, role: "admin" });
 
     if (patient) {
       user = patient;
@@ -84,36 +105,31 @@ export const login = async (req, res) => {
       user = doctor;
     }
     if (admin) {
-      // Handle admin login
       user = admin;
     }
 
-    //check if user exist
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ status: false, message: "User not found" });
     }
 
-    //compare password
     const isPasswordMatch = await bcrypt.compare(password, user.password);
 
     if (!isPasswordMatch) {
       return res
-        .status(404)
-        .json({ status: false, message: "Invalid Credentials, try again" });
+        .status(400)
+        .json({ status: false, message: "Invalid credentials, please try again" });
     }
 
-    // get token
     const token = generateToken(user);
     const { password: userPassword, role, appointments, ...rest } = user._doc;
-    res.status(200).json({
+    return res.status(200).json({
       status: true,
-      message: "Successfully login",
+      message: "Successfully logged in",
       token,
       data: { ...rest },
       role,
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ status: false, message: "Failed to login" });
+    return res.status(500).json({ status: false, message: error.message || "Failed to login" });
   }
 };
