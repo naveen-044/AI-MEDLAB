@@ -59,11 +59,21 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use((req, res, next) => {
-  const original = req.headers["x-matched-path"] || req.headers["x-vercel-matched-path"];
-  if (original && !original.endsWith(".js") && original !== req.url) {
-    const qIndex = req.url.indexOf("?");
-    const query = qIndex !== -1 ? req.url.slice(qIndex) : "";
-    req.url = original + query;
+  const forwardedUri = req.headers["x-forwarded-uri"];
+  const matchedPath = req.headers["x-matched-path"] || req.headers["x-vercel-matched-path"];
+  const qIndex = req.url.indexOf("?");
+  const query = qIndex !== -1 ? req.url.slice(qIndex) : "";
+
+  if (forwardedUri && !forwardedUri.endsWith(".js")) {
+    req.url = forwardedUri;
+  } else if (matchedPath && !matchedPath.endsWith(".js") && matchedPath !== req.url) {
+    req.url = matchedPath + query;
+  } else if (req.url.startsWith("/api/index.js") || req.url.startsWith("/api/index")) {
+    const pathMatch = req.url.match(/[?&]path=([^&]+)/);
+    if (pathMatch) {
+      const subPath = decodeURIComponent(pathMatch[1]).replace(/^\/+/, "");
+      req.url = `/api/${subPath}`;
+    }
   }
   next();
 });
@@ -86,6 +96,10 @@ app.get("/api", (req, res) => {
 });
 
 app.get("/api/index", (req, res) => {
+  res.send("Api is working");
+});
+
+app.get("/api/index.js", (req, res) => {
   res.send("Api is working");
 });
 
