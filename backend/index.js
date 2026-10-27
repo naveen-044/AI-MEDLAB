@@ -64,16 +64,18 @@ app.use((req, res, next) => {
   const qIndex = req.url.indexOf("?");
   const query = qIndex !== -1 ? req.url.slice(qIndex) : "";
 
-  if (forwardedUri && !forwardedUri.endsWith(".js")) {
+  const paramMatch = req.url.match(/[?&](?:path|0)=([^&]+)/);
+  if (paramMatch) {
+    const subPath = decodeURIComponent(paramMatch[1]).replace(/^\/+/, "");
+    const cleanQuery = query
+      .replace(/([?&])(?:path|0)=[^&]*(&|$)/, "$1")
+      .replace(/&&+/g, "&")
+      .replace(/[?&]$/, "");
+    req.url = `/api/${subPath}${cleanQuery}`;
+  } else if (forwardedUri && forwardedUri.startsWith("/api/") && !forwardedUri.endsWith(".js")) {
     req.url = forwardedUri;
-  } else if (matchedPath && !matchedPath.endsWith(".js") && matchedPath !== req.url) {
+  } else if (matchedPath && matchedPath.startsWith("/api/") && !matchedPath.endsWith(".js")) {
     req.url = matchedPath + query;
-  } else if (req.url.startsWith("/api/index.js") || req.url.startsWith("/api/index")) {
-    const pathMatch = req.url.match(/[?&]path=([^&]+)/);
-    if (pathMatch) {
-      const subPath = decodeURIComponent(pathMatch[1]).replace(/^\/+/, "");
-      req.url = `/api/${subPath}`;
-    }
   }
   next();
 });
